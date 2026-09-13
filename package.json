@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@deck.gl/layers": "^9.4.0",
+    "@deck.gl/mapbox": "^9.4.0",
     "@tailwindcss/forms": "^0.5.11",
     "@turf/turf": "^7.4.0",
     "deck.gl": "^9.0.6",

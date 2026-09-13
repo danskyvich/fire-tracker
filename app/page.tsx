@@ -1,6 +1,6 @@
 "use client"
 
-import InteractiveMap from "./components/map-instance";
+import InteractiveMap from "./components/map/map-instance";
 import Sidebar from "./components/ui/sidebar"
 import SearchField from "./components/ui/search-field";
 import { SearchIcon } from "lucide-react";

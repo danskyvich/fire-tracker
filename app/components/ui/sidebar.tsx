@@ -1,7 +1,7 @@
 import {Locate, Layers, Wind, Ruler, List, Info} from 'lucide-react'
 import { useEffect, useState } from 'react';
 import * as maplibregl from "maplibre-gl";
-import { getUserLocation } from '@/app/libs/location/geolocation';
+import { getUserLocation } from '@/app/lib/location/geolocation';
 import Legends from './legends';
 import Layer from "./layers"
 import WebAppPage from './web-app-page';

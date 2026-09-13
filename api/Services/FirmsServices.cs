@@ -21,7 +21,7 @@ namespace ApiCsvParser
         public double latitude { get; set; }
         public double longitude { get; set; }
         public double bright_ti4 { get; set; }
-        public string confidence { get; set; }
+        public required string confidence { get; set; }
         public DateTime acq_date { get; set; }
     }   
    public class CSVService: ICSVService

@@ -4,9 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 import { BASEMAP } from "@deck.gl/carto";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { getUserLocation } from "../libs/location/geolocation";
-import ErrorModal from "./ui/error-modal";
-import { clearMeasureState, createMeasureState, toggleMeasurePoint } from "../libs/location/measure/distance";
+import { getUserLocation } from "../../lib/location/geolocation";
+import { clearMeasureState, createMeasureState, toggleMeasurePoint } from "../../lib/location/measure/distance";
+import { FireDetection } from "@/app/lib/api/types";
+import {FiresMap} from "./fires-layer";
+import { MapboxOverlay } from "@deck.gl/mapbox";
+import { getFires } from "@/app/lib/api/fires";
 
 interface InteractiveMapProps {
   getLiftedMap: (map: maplibregl.Map) => void;
@@ -41,6 +44,19 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring }: Interactiv
   const measureRef = useRef(createMeasureState());
   const isMeasuringRef = useRef(isMeasuring);
   const distanceRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<MapboxOverlay | null>(null);
+
+  // for fires
+  const [fires, setFires] = useState<FireDetection[]>([]);
+
+  useEffect(() => {
+    getFires().then(setFires).catch((err) => setError(String(err)));
+  }, []);
+
+  useEffect(() => {
+    if (fires.length === 0) return;
+    overlayRef.current?.setProps({ layers: [FiresMap(fires)] });
+  }, [fires]);
 
   useEffect(() => {
     // prompt the user to enable their location w/ consent
@@ -170,6 +186,10 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring }: Interactiv
     async function initMap() {
       if (!mapContainer.current || mapRef.current) return;
 
+      if (!overlayRef.current) {
+        overlayRef.current = new MapboxOverlay({ layers: []});
+      };
+
       const map = new maplibregl.Map({
         container: mapContainer.current,
         style: BASEMAP.DARK_MATTER,
@@ -177,6 +197,8 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring }: Interactiv
         center: [longitude ?? 121.05, latitude ?? 14.65], //default to Quezon City
         zoom: 6,
       });
+
+      map.addControl(overlayRef.current);
 
       const scale = new maplibregl.ScaleControl({
         maxWidth: 100,
@@ -235,7 +257,6 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring }: Interactiv
 
   return (
     <>
-      {error && <ErrorModal message={error} />}
       <div className="relative w-dvw h-dvh">
         <div ref={mapContainer} id="map-canvas" className="w-full h-full" />
         <div
