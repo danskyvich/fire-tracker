@@ -11,17 +11,21 @@ import { useState } from "react";
 export default function Home() {
   // get the map from InteractiveMap
   const [map, setMap] = useState<maplibregl.Map | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  //toggle for measure-distance feature
+  const isMeasuring = activeIndex === 3;
 
   return (
     <div className="flex w-full h-full">
-      <InteractiveMap getLiftedMap={setMap} />
+      <InteractiveMap getLiftedMap={setMap} isMeasuring={isMeasuring}/>
 
       {/* Floating container for UI */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none flex justify-between">
         <div className="absolute pointer-events-none grid grid-[15%_1fr_15%] sm:grid-cols-[12.5%_1fr_12.5%] md:grid-cols-[10%_1fr_10%] grid-rows-[5%_1fr_5%] auto-cols-auto w-full h-full p-3">
           {/* Row-1*/}
           <div className="flex flex-row col-span-3 row-span-1 row-start-1 items-center gap-5 justify-center">
-            <div className="pointer-events-auto flex h-fit gap-2 items-center justify-end">
+            <div className="pointer-events-auto flex h-full gap-2 py-1 items-center justify-end">
               <SearchIcon size={20} className="min-w-3 h-auto cursor-pointer" />
               <SearchField />
             </div>
@@ -30,7 +34,7 @@ export default function Home() {
 
           {/* Middle */}
           <div className="flex justify-start items-center">
-            <Sidebar />
+            <Sidebar map={map} onIndex={setActiveIndex} activeIndex={activeIndex}/>
           </div>
           <div />
           <div />

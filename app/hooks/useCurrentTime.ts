@@ -1,17 +1,29 @@
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+
+function subscribe(callback: () => void) {
+  const timer = setInterval(callback, 1000);
+  return () => clearInterval(timer);
+}
+
+function getSnapshot() {
+  return new Date().toLocaleTimeString();
+}
+
+function getServerSnapshot() {
+  return null; // no "real" time available during SSR
+}
+
+function getTimezoneSnapshot() {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+
+function getServerTimezoneSnapshot() {
+  return null;
+}
 
 export function useCurrentTime() {
+  const time = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const timezone = useSyncExternalStore(subscribe, getTimezoneSnapshot, getServerTimezoneSnapshot);
 
-    const [time, setTime] = useState(() => new Date().toLocaleTimeString());
-    const interval = 1000;
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setTime(new Date().toLocaleTimeString());
-        }, interval);
-
-        return  () => clearInterval(timer);
-    }, [interval]);
-
-    const timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
-    return { time, timezone}
+  return { time, timezone };
 }

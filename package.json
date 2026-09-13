@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@tailwindcss/forms": "^0.5.11",
+    "@turf/turf": "^7.4.0",
     "deck.gl": "^9.0.6",
     "exact": "^1.0.1",
     "lucide-react": "^1.45.0",
