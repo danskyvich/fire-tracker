@@ -40,17 +40,21 @@ namespace ApiCsvParser
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ICSVService _csvService;
 
-        public FirmsService(IHttpClientFactory httpClientFactory, ICSVService csvService)
+        private readonly IConfiguration _configuration;
+
+        public FirmsService(IHttpClientFactory httpClientFactory, ICSVService csvService, IConfiguration configuration)
         {
             _httpClientFactory = httpClientFactory;
             _csvService = csvService;
+            _configuration = configuration;
         }
 
         public async Task<IEnumerable<FireDetection>> GetFiresAsync()
         {
             var httpClient = _httpClientFactory.CreateClient("FIRMSClient");
+            var apiKey = _configuration["NasaFirmsApiKey"] ?? throw new InvalidOperationException("NasaFirmsApiKey environment variable is not set.");
             var request = new HttpRequestMessage(
-                HttpMethod.Get, "api/area/csv/7ac6a382bf12c808e1b2b9082ac5c917/VIIRS_SNPP_NRT/world/5"
+                HttpMethod.Get, $"api/area/csv/{apiKey}/VIIRS_SNPP_NRT/world/5"
             )
             {
                 Headers =

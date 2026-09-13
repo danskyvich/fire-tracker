@@ -36,7 +36,7 @@ export default function WebAppPage({onClose, open}: {onClose: () => void, open: 
             <div className="flex w-full items-center justify-between my-5">
               <p className="text-sm">Made by: Danilo Pelin Jr.</p>
 
-              <div className="flex w-fit h-fit rounded-lg border border-(--color-primary) hover:bg-(--color-primary) px-3 py-2 gap-2 cursor-pointer hover:text-background" onClick={() => redirect("https://danppelin.vercel.app")}>
+              <div className="flex w-fit h-fit rounded-lg border border-(--color-primary) hover:bg-(--color-primary) px-3 py-2 gap-2 cursor-pointer hover:text-background duration-100 transition-all" onClick={() => redirect("https://danppelin.vercel.app")}>
                 <ArrowUpRight size={18} className="min-w-4 h-auto cursor-pointer"/>
                 <p className="font-semibold text-sm">Visit portfolio</p>
               </div>
