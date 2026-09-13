@@ -1,3 +1,5 @@
+using ApiCsvParser;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -5,9 +7,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
+builder.Services.AddControllers();
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
+// add CORS policy
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MyAllowSpecificOrigins, 
@@ -19,6 +23,16 @@ builder.Services.AddCors(options =>
         });
 });
 
+// NASA FIRMS API
+builder.Services.AddHttpClient("FIRMSClient", client =>
+{
+    client.BaseAddress = new Uri("https://firms.modaps.eosdis.nasa.gov/");
+});
+
+builder.Services.AddScoped<ICSVService, CSVService>();
+
+builder.Services.AddScoped<FirmsService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -27,11 +41,11 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseCors(MyAllowSpecificOrigins);
 
-app.MapGet("/api/fires", () => Results.Ok());
+app.MapControllers();
 
 app.Run();
 
