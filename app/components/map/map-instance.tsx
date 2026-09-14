@@ -57,7 +57,7 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring }: Interactiv
 
   useEffect(() => {
     if (fires.length === 0) return;
-    overlayRef.current?.setProps({ layers: [FiresMap({ fires, onChose: setSelectedFire })] });
+    overlayRef.current?.setProps({ layers: [FiresMap({ fires, onChose: setSelectedFire })], getCursor: ({ isHovering }) => isHovering ? 'pointer' : 'default' });
   }, [fires]);
 
   useEffect(() => {
@@ -263,10 +263,10 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring }: Interactiv
         <div ref={mapContainer} id="map-canvas" className="w-full h-full" />
         <div
           ref={distanceRef}
-          className={`${!isMeasuring && "hidden"} absolute bg-background px-2 py-1 border border-white rounded-lg bottom-10 left-4 text-sm pointer-events-none text-white z-10`}
+          className={`${!isMeasuring && "hidden"} absolute bg-background px-2 py-1 border border-white rounded-lg bottom-10 left-4 text-sm text-white z-10`}
         />
         {
-          selectedFire && <FireInfo selectedFire={selectedFire} onClose={() => !selectedFire} open />
+          selectedFire && <FireInfo selectedFire={selectedFire} onClose={() => setSelectedFire(null)} open />
         }
       </div>
     </>
