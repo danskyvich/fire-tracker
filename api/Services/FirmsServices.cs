@@ -23,6 +23,7 @@ namespace ApiCsvParser
         public double bright_ti4 { get; set; }
         public required string confidence { get; set; }
         public DateTime acq_date { get; set; }
+        public string acq_time { get; set; }
     }   
    public class CSVService: ICSVService
     {

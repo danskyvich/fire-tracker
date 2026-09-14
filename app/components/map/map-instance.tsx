@@ -10,6 +10,7 @@ import { FireDetection } from "@/app/lib/api/types";
 import {FiresMap} from "./fires-layer";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import { getFires } from "@/app/lib/api/fires";
+import FireInfo from "../ui/fire-info";
 
 interface InteractiveMapProps {
   getLiftedMap: (map: maplibregl.Map) => void;
@@ -48,6 +49,7 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring }: Interactiv
 
   // for fires
   const [fires, setFires] = useState<FireDetection[]>([]);
+  const [selectedFire, setSelectedFire] = useState<FireDetection | null>(null);
 
   useEffect(() => {
     getFires().then(setFires).catch((err) => setError(String(err)));
@@ -55,7 +57,7 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring }: Interactiv
 
   useEffect(() => {
     if (fires.length === 0) return;
-    overlayRef.current?.setProps({ layers: [FiresMap(fires)] });
+    overlayRef.current?.setProps({ layers: [FiresMap({ fires, onChose: setSelectedFire })] });
   }, [fires]);
 
   useEffect(() => {
@@ -263,6 +265,9 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring }: Interactiv
           ref={distanceRef}
           className={`${!isMeasuring && "hidden"} absolute bg-background px-2 py-1 border border-white rounded-lg bottom-10 left-4 text-sm pointer-events-none text-white z-10`}
         />
+        {
+          selectedFire && <FireInfo selectedFire={selectedFire} onClose={() => !selectedFire} open />
+        }
       </div>
     </>
   );

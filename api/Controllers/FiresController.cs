@@ -13,7 +13,6 @@ public class FiresController: ControllerBase
         _firmsService = firmsService;
     }
 
-
     [HttpGet]
     public async Task<IActionResult> Get()
     {

@@ -7,7 +7,6 @@ import { SearchIcon } from "lucide-react";
 import WebHeader from "./components/ui/web-header";
 import Zoom from "./components/ui/zoom";
 import { useState } from "react";
-import FireInfo from "./components/ui/fire-info";
 
 export default function Home() {
   // get the map from InteractiveMap
@@ -20,8 +19,6 @@ export default function Home() {
   return (
     <div className="flex w-full h-full">
       <InteractiveMap getLiftedMap={setMap} isMeasuring={isMeasuring}/>
-
-      <FireInfo/>
 
       {/* Floating container for UI */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none flex justify-between">

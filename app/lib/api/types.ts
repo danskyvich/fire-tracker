@@ -4,4 +4,5 @@ export interface FireDetection {
     confidence: number,
     brightness: string,
     acqDate: string,
+    acqTime: string,
 }
