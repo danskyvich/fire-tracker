@@ -57,7 +57,9 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring }: Interactiv
 
   useEffect(() => {
     if (fires.length === 0) return;
-    overlayRef.current?.setProps({ layers: [FiresMap({ fires, onChose: setSelectedFire })], getCursor: ({ isHovering }) => isHovering ? 'pointer' : 'default' });
+    overlayRef.current?.setProps({ 
+      layers: [FiresMap({ fires, onChose: setSelectedFire })], 
+      getCursor: ({ isHovering }) => isHovering ? 'pointer' : 'default' });
   }, [fires]);
 
   useEffect(() => {
