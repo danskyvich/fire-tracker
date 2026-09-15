@@ -1,5 +1,6 @@
 import { FireDetection } from "@/app/lib/api/types";
 import { ScatterplotLayer } from "deck.gl";
+import { DataFilterExtension } from"@deck.gl/extensions";
 
 interface FiresMapProps {
     fires: FireDetection[];
