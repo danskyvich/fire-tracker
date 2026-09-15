@@ -2,17 +2,14 @@ import { X } from "lucide-react";
 import LayerItem from "./layer-item";
 import { useState } from "react";
 
-export default function Layer({onClose, open}: {onClose: () => void, open: number | null}) {
+interface LayerProps {
+  onClose: () => void;
+  open: number | null;
+  toggleLayers: (id: string) => void;
+  activeLayers: Set<string>;
+}
 
-    const [activeLayers, setActiveLayers] = useState<Set<string>>(new Set(["fire-markers"]));
-
-    const toggleLayers = (id: string) => {
-        setActiveLayers(prev => {
-            const next = new Set(prev);
-            next.has(id) ? next.delete(id) : next.add(id);
-            return next;
-        })
-    }
+export default function Layer({onClose, open, toggleLayers, activeLayers}: LayerProps) {
 
     const LAYERS_ITEMS = [
       {
@@ -38,7 +35,7 @@ export default function Layer({onClose, open}: {onClose: () => void, open: numbe
       {
         id: "evac-zones",
         label: "Evacuation zones",
-        toggle: activeLayers.has("evac-zonesy"),
+        toggle: activeLayers.has("evac-zones"),
         onCheck: () => toggleLayers("evac-zones"),
       },
     ];

@@ -11,9 +11,11 @@ interface SidebarProps {
   map: maplibregl.Map | null,
   activeIndex: number | null,
   onIndex: (activeIndex: number | null) => void;
+  activeLayers: Set<string>;
+  toggleLayers: (id: string) => void;
 }
 
-export default function Sidebar({map, activeIndex, onIndex}: SidebarProps) {
+export default function Sidebar({map, activeIndex, onIndex, activeLayers, toggleLayers}: SidebarProps) {
 
   const [error, setError] = useState<string | null>(null);
   const [lat, setLat] = useState<number>(0);
@@ -75,7 +77,7 @@ export default function Sidebar({map, activeIndex, onIndex}: SidebarProps) {
         {error && <ErrorModal message={error} />}
         {activeIndex === 1 && (
           <div className="absolute left-18 top-[38%]">
-            <Layer onClose={() => onIndex(null)} open={activeIndex} />
+            <Layer onClose={() => onIndex(null)} open={activeIndex} activeLayers={activeLayers} toggleLayers={toggleLayers}/>
           </div>
         )}
         {activeIndex === 4 && (

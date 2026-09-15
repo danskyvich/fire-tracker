@@ -15,6 +15,7 @@ import FireInfo from "../ui/fire-info";
 interface InteractiveMapProps {
   getLiftedMap: (map: maplibregl.Map) => void;
   isMeasuring: boolean;
+  activeLayers: Set<string>;
 }
 
 function checkWebGLSupport(): boolean {
@@ -27,7 +28,7 @@ function checkWebGLSupport(): boolean {
   );
 }
 
-export default function InteractiveMap({ getLiftedMap, isMeasuring }: InteractiveMapProps) {
+export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers }: InteractiveMapProps) {
   // map containers
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -50,17 +51,22 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring }: Interactiv
   // for fires
   const [fires, setFires] = useState<FireDetection[]>([]);
   const [selectedFire, setSelectedFire] = useState<FireDetection | null>(null);
+  const currentSelectedFire = selectedFire !== null ? true : false;
 
+  // set fires
   useEffect(() => {
     getFires().then(setFires).catch((err) => setError(String(err)));
   }, []);
 
+  // conditionally display fire overlay
   useEffect(() => {
     if (fires.length === 0) return;
     overlayRef.current?.setProps({ 
-      layers: [FiresMap({ fires, onChose: setSelectedFire })], 
+      layers: [
+        activeLayers.has("fire-markers") && FiresMap({fires, onChose: setSelectedFire}),
+      ].filter(Boolean),
       getCursor: ({ isHovering }) => isHovering ? 'pointer' : 'default' });
-  }, [fires]);
+  }, [fires, activeLayers]);
 
   useEffect(() => {
     // prompt the user to enable their location w/ consent
