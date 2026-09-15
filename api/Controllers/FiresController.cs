@@ -1,29 +1,31 @@
-using ApiCsvParser;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class FiresController: ControllerBase
+namespace api
 {
-    private readonly FirmsService _firmsService;
-
-    public FiresController(FirmsService firmsService)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class FiresController : ControllerBase
     {
-        _firmsService = firmsService;
-    }
+        private readonly FirmsService _firmsService;
 
-    [HttpGet]
-    public async Task<IActionResult> Get()
-    {
-        try
+        public FiresController(FirmsService firmsService)
         {
-            var fires = await _firmsService.GetFiresAsync();
-            return Ok(fires);
+            _firmsService = firmsService;
         }
-        catch (HttpRequestException ex)
+
+        [HttpGet]
+        public async Task<IActionResult> Get()
         {
-            return StatusCode(502, ex.Message);
+            try
+            {
+                var fires = await _firmsService.GetFiresAsync();
+                return Ok(fires);
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(502, ex.Message);
+            }
         }
     }
 }

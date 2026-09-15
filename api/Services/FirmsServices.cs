@@ -1,5 +1,6 @@
 // FirmsService.cs
 using Microsoft.Net.Http.Headers;
+using System.Linq;
 
 namespace api
 {
@@ -35,10 +36,9 @@ namespace api
 
             var csv = await response.Content.ReadAsStreamAsync();
 
-            // filter data
-            
+            var fires = _csvService.ReadCSV<FireDetection>(csv);
 
-            return _csvService.ReadCSV<FireDetection>(csv);
+            return fires.Where(fire => FireFilters.IsValidFire(fire.bright_ti4, fire.deltaT45, fire.daynight));
         }
     }
 }

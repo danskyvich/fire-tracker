@@ -74,21 +74,24 @@ export default function FireInfo({selectedFire, onClose, open}: FireInfoProps) {
           <div
             className={` ${!isMinimized && "border-b border-white/25 pb-1"} flex w-full h-fit items-center justify-between`}
           >
-            <div className="">
-              <div className="flex w-full gap-2">
-                <Flame size={18} className="min-w-3 h-auto" />
-                <p className="text-md font-semibold font-sans">
-                  {selectedFire?.longitude}, {selectedFire?.latitude}
-                </p>
+            <div className="flex flex-col w-full">
+              <div className="flex w-full justify-between">
+                <div className="flex w-full gap-2">
+                  <Flame size={18} className="min-w-3 h-auto" />
+                  <p className="text-lg font-semibold font-sans">
+                    Satellite hotspot
+                  </p>
+                </div>
+
+                <X
+                  className="min-w-4 h-auto cursor-pointer"
+                  onClick={onClose}
+                />
               </div>
-              <p className="font-extralight font-sans text-sm">
-                <span className="text-white/75 text-sm italic">since</span>{" "}
-                {formatDate(selectedFire?.acq_date)},{" "}
-                {formatTime(selectedFire?.acq_time)}
+              <p className="text-sm font-light font-sans">
+                {selectedFire?.longitude}, {selectedFire?.latitude}
               </p>
             </div>
-
-            <X className="min-w-4 h-auto cursor-pointer" onClick={onClose} />
           </div>
 
           {!isMinimized && (
@@ -119,9 +122,16 @@ export default function FireInfo({selectedFire, onClose, open}: FireInfoProps) {
                 {duration} <span className="text-base font-light">ago</span>
               </p>
 
+              {/* Since */}
+              <p className="font-extralight font-sans text-sm">
+                <span className="text-white/75 text-sm italic">since</span>{" "}
+                {formatDate(selectedFire?.acq_date)},{" "}
+                {formatTime(selectedFire?.acq_time)}
+              </p>
+
               {/* Satellite */}
               <div className="flex w-full gap-2">
-                <Satellite size={18} className="min-w-3 h-auto"/>
+                <Satellite size={18} className="min-w-3 h-auto" />
                 <p className="text-sm font-sans">
                   {String(selectedFire?.satellite) === "N" &&
                     "Suomi NPP Satellite"}
