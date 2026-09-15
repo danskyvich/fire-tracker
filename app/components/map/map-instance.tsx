@@ -200,6 +200,9 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring }: Interactiv
         interactive: true,
         center: [longitude ?? 121.05, latitude ?? 14.65], //default to Quezon City
         zoom: 6,
+        pitch: 0,
+        maxPitch: 0,
+        minPitch: 0,
       });
 
       map.addControl(overlayRef.current);

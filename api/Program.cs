@@ -1,4 +1,4 @@
-using ApiCsvParser;
+using api;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +32,8 @@ builder.Services.AddHttpClient("FIRMSClient", client =>
 builder.Services.AddScoped<ICSVService, CSVService>();
 
 builder.Services.AddScoped<FirmsService>();
+
+builder.Services.AddScoped<FireDetection>();
 
 var app = builder.Build();
 
