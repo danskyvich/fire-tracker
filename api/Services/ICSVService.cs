@@ -1,7 +1,7 @@
 using CsvHelper;
 using System.Globalization;
 
-namespace api
+namespace WildFireTracker.fires
 {
     public interface ICSVService
     {

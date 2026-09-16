@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 
-namespace api
+namespace WildFireTracker.fires
 {
     [ApiController]
     [Route("api/[controller]")]

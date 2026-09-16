@@ -1,4 +1,5 @@
-using api;
+using WildFireTracker.fires;
+using WildFireTracker.wind;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,12 +29,16 @@ builder.Services.AddHttpClient("FIRMSClient", client =>
 {
     client.BaseAddress = new Uri("https://firms.modaps.eosdis.nasa.gov/");
 });
+builder.Services.AddHttpClient("WindClient", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7000");
+});
 
 builder.Services.AddScoped<ICSVService, CSVService>();
-
 builder.Services.AddScoped<FirmsService>();
-
 builder.Services.AddScoped<FireDetection>();
+builder.Services.AddScoped<WindServices>();
+builder.Services.AddScoped<WindVariables>();
 
 var app = builder.Build();
 

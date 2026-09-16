@@ -1,4 +1,4 @@
-namespace api
+namespace WildFireTracker.fires
 {
     public class FireFilters
     {

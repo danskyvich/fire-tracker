@@ -2,7 +2,7 @@
 using Microsoft.Net.Http.Headers;
 using System.Linq;
 
-namespace api
+namespace WildFireTracker.fires
 {
     public class FirmsService
     {
