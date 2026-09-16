@@ -25,6 +25,14 @@ export interface WindVariables {
     refTime: string,
 }
 
+export interface WindTextureBitmap {
+    bitmap: ImageBitmap;
+    uMin: number;
+    uMax: number;
+    vMin: number;
+    vMax: number;
+}
+
 export interface WindComponent {
     header: WindVariables,
     data: number[],

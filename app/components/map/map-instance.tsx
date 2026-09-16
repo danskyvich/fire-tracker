@@ -6,12 +6,12 @@ import { BASEMAP } from "@deck.gl/carto";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { getUserLocation } from "../../lib/location/geolocation";
 import { clearMeasureState, createMeasureState, toggleMeasurePoint } from "../../lib/location/measure/distance";
-import { FireDetection } from "@/app/lib/api/types";
+import { FireDetection, WindTextureBitmap } from "@/app/lib/api/types";
 import {FiresMap} from "./fires-layer";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import { getFires } from "@/app/lib/api/fires/fires";
 import FireInfo from "../ui/fire-info";
-import { WindParticleLayer, WindTextureResult } from "maplibre-gl-wind";
+import { generateWindTexture, WindParticleLayer, WindTextureResult } from "maplibre-gl-wind";
 
 interface InteractiveMapProps {
   getLiftedMap: (map: maplibregl.Map) => void;
@@ -55,7 +55,7 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
   const [selectedFire, setSelectedFire] = useState<FireDetection | null>(null);
 
   // for wind
-  const [windTexture, setWindTexture] = useState<WindTextureResult>();
+  const [windTexture, setWindTexture] = useState<WindTextureBitmap | null>(null);
 
   // webworkers
   const workerRef = useRef<Worker | null>(null);
@@ -69,26 +69,26 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
   // webworker for wind
   useEffect(() => {
     workerRef.current = new Worker(
-      new URL("../../workers/wind-overlay.ts", import.meta.url)
+      new URL("../../workers/wind-overlay-worker.ts", import.meta.url)
     );
     workerRef.current.postMessage({
       type: 'BEGIN',
-    })
+    });
 
     workerRef.current.onmessage = function(event) {
       const { type, data } = event.data;
 
       switch (type) {
-        case 'WORKER_ERROR':
-          setError(data);
-          break;
-        case 'TEXTURE_DATA':
+        case "TEXTURE_DATA":
           setWindTexture(data);
           break;
-        default:
+        case "WORKER_ERROR":
+          setError(data.message);
           break;
       }
     }
+
+    workerRef.current.onerror = (e) => setError(e.message);
     return () => {
       workerRef.current?.terminate();
     }
@@ -97,16 +97,19 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
   // conditionally display fire overlay
   useEffect(() => {
     if (fires.length === 0) return;
+
+    const windLayerReady = activeLayers.has("wind-map") && windTexture?.bitmap;
+    console.log('windTexture at render: ', windTexture, windTexture?.canvas);
     overlayRef.current?.setProps({
       layers: [
         //fire
         activeLayers.has("fire-markers") &&
           FiresMap({ fires, onChose: setSelectedFire }),
         //wind
-        activeLayers.has("wind-map") &&
+        windLayerReady &&
           new WindParticleLayer({
             id: "wind",
-            image: windTexture?.canvas.toDataURL() || undefined,
+            image: windTexture.bitmap,
             imageUnscale: [
               Math.min(windTexture?.uMin ?? -50, windTexture?.vMin ?? -50),
               Math.max(windTexture?.uMax ?? 50, windTexture?.vMax ?? 50),
