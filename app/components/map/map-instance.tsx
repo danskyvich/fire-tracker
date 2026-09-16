@@ -9,8 +9,10 @@ import { clearMeasureState, createMeasureState, toggleMeasurePoint } from "../..
 import { FireDetection } from "@/app/lib/api/types";
 import {FiresMap} from "./fires-layer";
 import { MapboxOverlay } from "@deck.gl/mapbox";
-import { getFires } from "@/app/lib/api/fires";
+import { getFires } from "@/app/lib/api/fires/fires";
 import FireInfo from "../ui/fire-info";
+import { generateWindTexture, WindParticleLayer, WindTextureResult } from "maplibre-gl-wind";
+import { getWindData, toWindMap } from "@/app/lib/api/wind/wind";
 
 interface InteractiveMapProps {
   getLiftedMap: (map: maplibregl.Map) => void;
@@ -51,11 +53,29 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
   // for fires
   const [fires, setFires] = useState<FireDetection[]>([]);
   const [selectedFire, setSelectedFire] = useState<FireDetection | null>(null);
-  const currentSelectedFire = selectedFire !== null ? true : false;
+
+  // for wind
+  const [windTexture, setWindTexture] = useState<WindTextureResult>();
 
   // set fires
   useEffect(() => {
     getFires().then(setFires).catch((err) => setError(String(err)));
+
+    let cancelled = false;
+    (async () => {
+      const data = await getWindData();
+      const values = toWindMap(data);
+      const texture = generateWindTexture(values, {
+        width: 360,
+        height: 180,
+        bounds: [-180, -90, 180, 90],
+      });
+      if (!cancelled) setWindTexture(texture);
+    })();
+    
+    return () => {
+      cancelled = true;
+    }
   }, []);
 
   // conditionally display fire overlay
@@ -63,10 +83,19 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
     if (fires.length === 0) return;
     overlayRef.current?.setProps({ 
       layers: [
+        //fire
         activeLayers.has("fire-markers") && FiresMap({fires, onChose: setSelectedFire}),
+        //wind
+        activeLayers.has("wind-map") && new WindParticleLayer({
+          id: 'wind',
+          image: windTexture as (WindTextureResult & string),
+          bounds: [-180, -90, 180, 90],
+          imageUnscale: [-50, 50],
+          numParticles: 8192,
+        }),
       ].filter(Boolean),
       getCursor: ({ isHovering }) => isHovering ? 'pointer' : 'default' });
-  }, [fires, activeLayers]);
+  }, [fires, activeLayers, windTexture]);
 
   useEffect(() => {
     // prompt the user to enable their location w/ consent

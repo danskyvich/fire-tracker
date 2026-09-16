@@ -4,8 +4,8 @@ namespace WildFireTracker.wind
     {
         public int nx { get; set; }
         public int ny { get; set; }
-        public int dx { get; set; }
-        public int dy { get; set; }
+        public double dx { get; set; }
+        public double dy { get; set; }
         public double lo1 { get; set;}
         public double la1 { get; set; }
         public double lo2 { get; set; }

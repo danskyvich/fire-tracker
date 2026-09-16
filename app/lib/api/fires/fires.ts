@@ -1,4 +1,4 @@
-import { FireDetection } from "./types";
+import { FireDetection } from "../types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_SITE ?? "http://localhost:5180";
 

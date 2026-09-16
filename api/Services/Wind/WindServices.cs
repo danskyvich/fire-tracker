@@ -16,7 +16,6 @@ namespace WildFireTracker.wind
         public async Task<T> GetTAsync<T>()
         {
             var httpClient = _httpClientFactory.CreateClient("WindClient");
-            var apiKey = _configuration["OpenWeatherMapApiKey"];
             var url = "/latest";
             var request = new HttpRequestMessage(
                 HttpMethod.Get, url
@@ -24,7 +23,7 @@ namespace WildFireTracker.wind
             {
                 Headers =
         {
-            { HeaderNames.UserAgent, "OWMRequest" }
+            { HeaderNames.UserAgent, "WindRequest" }
         }
             };
 

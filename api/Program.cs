@@ -31,7 +31,7 @@ builder.Services.AddHttpClient("FIRMSClient", client =>
 });
 builder.Services.AddHttpClient("WindClient", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7000");
+    client.BaseAddress = new Uri("http://localhost:7000");
 });
 
 builder.Services.AddScoped<ICSVService, CSVService>();

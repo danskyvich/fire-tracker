@@ -11,3 +11,28 @@ export interface FireDetection {
     acq_time: string,
     satellite: string,
 }
+
+export interface WindVariables {
+    lo1: number,
+    la1: number,
+    lo2: number,
+    la2: number,
+    dx: number,
+    dy: number,
+    nx: number,
+    ny: number,
+    parameterNumber: number,
+    refTime: string,
+}
+
+export interface WindComponent {
+    header: WindVariables,
+    data: number[],
+}
+
+export interface WindDataPoint {
+    lat: number,
+    lon: number,
+    speed: number,
+    direction: number,
+}
