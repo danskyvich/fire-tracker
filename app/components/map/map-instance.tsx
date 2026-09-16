@@ -11,8 +11,7 @@ import {FiresMap} from "./fires-layer";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import { getFires } from "@/app/lib/api/fires/fires";
 import FireInfo from "../ui/fire-info";
-import { generateWindTexture, WindParticleLayer, WindTextureResult } from "maplibre-gl-wind";
-import { getWindData, toWindMap } from "@/app/lib/api/wind/wind";
+import { WindParticleLayer, WindTextureResult } from "maplibre-gl-wind";
 
 interface InteractiveMapProps {
   getLiftedMap: (map: maplibregl.Map) => void;
@@ -20,6 +19,7 @@ interface InteractiveMapProps {
   activeLayers: Set<string>;
 }
 
+// check if WebGL is supported
 function checkWebGLSupport(): boolean {
   if (typeof window === "undefined") return true;
   const canvas = document.createElement("canvas");
@@ -57,44 +57,77 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
   // for wind
   const [windTexture, setWindTexture] = useState<WindTextureResult>();
 
+  // webworkers
+  const workerRef = useRef<Worker | null>(null);
+
   // set fires
   useEffect(() => {
     getFires().then(setFires).catch((err) => setError(String(err)));
 
-    let cancelled = false;
-    (async () => {
-      const data = await getWindData();
-      const values = toWindMap(data);
-      const texture = generateWindTexture(values, {
-        width: 360,
-        height: 180,
-        bounds: [-180, -90, 180, 90],
-      });
-      if (!cancelled) setWindTexture(texture);
-    })();
-    
+  }, []);
+
+  // webworker for wind
+  useEffect(() => {
+    workerRef.current = new Worker(
+      new URL("../../workers/wind-overlay.ts", import.meta.url)
+    );
+    workerRef.current.postMessage({
+      type: 'BEGIN',
+    })
+
+    workerRef.current.onmessage = function(event) {
+      const { type, data } = event.data;
+
+      switch (type) {
+        case 'WORKER_ERROR':
+          setError(data);
+          break;
+        case 'TEXTURE_DATA':
+          setWindTexture(data);
+          break;
+        default:
+          break;
+      }
+    }
     return () => {
-      cancelled = true;
+      workerRef.current?.terminate();
     }
   }, []);
 
   // conditionally display fire overlay
   useEffect(() => {
     if (fires.length === 0) return;
-    overlayRef.current?.setProps({ 
+    overlayRef.current?.setProps({
       layers: [
         //fire
-        activeLayers.has("fire-markers") && FiresMap({fires, onChose: setSelectedFire}),
+        activeLayers.has("fire-markers") &&
+          FiresMap({ fires, onChose: setSelectedFire }),
         //wind
-        activeLayers.has("wind-map") && new WindParticleLayer({
-          id: 'wind',
-          image: windTexture as (WindTextureResult & string),
-          bounds: [-180, -90, 180, 90],
-          imageUnscale: [-50, 50],
-          numParticles: 8192,
-        }),
+        activeLayers.has("wind-map") &&
+          new WindParticleLayer({
+            id: "wind",
+            image: windTexture?.canvas.toDataURL() || undefined,
+            imageUnscale: [
+              Math.min(windTexture?.uMin ?? -50, windTexture?.vMin ?? -50),
+              Math.max(windTexture?.uMax ?? 50, windTexture?.vMax ?? 50),
+            ],
+            speedRange: [
+              0,
+              Math.max(windTexture?.uMax ?? 30, windTexture?.vMax ?? 30),
+            ],
+            maxAge: 50,
+            speedFactor: 10,
+            bounds: [-180, -90, 180, 90],
+            width: 4,
+            colorRamp: [
+              [0.0, [59, 130, 189, 255]],
+              [0.5, [253, 174, 97, 255]], 
+              [1.0, [213, 62, 79, 255]],
+            ],
+          }),
       ].filter(Boolean),
-      getCursor: ({ isHovering }) => isHovering ? 'pointer' : 'default' });
+      getCursor: ({ isHovering }) => (isHovering ? "pointer" : "default"),
+    });
   }, [fires, activeLayers, windTexture]);
 
   useEffect(() => {
