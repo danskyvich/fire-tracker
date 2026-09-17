@@ -60,6 +60,9 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
   // webworkers
   const workerRef = useRef<Worker | null>(null);
 
+  // API
+  const API_BASE = process.env.NEXT_PUBLIC_API_SITE ?? "http://localhost:5180";
+
   // set fires
   useEffect(() => {
     getFires().then(setFires).catch((err) => setError(String(err)));
@@ -180,6 +183,25 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
               ],
             },
           });
+
+          map.addSource("aqicn-layer", {
+            type: "raster",
+            tiles: [
+              `${API_BASE}/api/Aqi/tiles/{z}/{x}/{y}`
+            ],
+            tileSize: 256,
+            attribution:
+              'Air Quality data © <a href="https://aqicn.org" target="_blank">WAQI</a>',
+          });
+
+          map.addLayer({
+            id: 'aqicn-layer',
+            type: 'raster',
+            source: 'aqicn-layer',
+            paint: {
+              'raster-opacity': 0.85
+            },
+          })
 
           // this section renders the points and lines on the map
           // modify points and lines appearance here

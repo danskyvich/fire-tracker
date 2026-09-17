@@ -1,5 +1,6 @@
 using WildFireTracker.fires;
 using WildFireTracker.wind;
+using WildFireTracker.aqi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,12 +34,17 @@ builder.Services.AddHttpClient("WindClient", client =>
 {
     client.BaseAddress = new Uri("http://localhost:7000");
 });
+builder.Services.AddHttpClient("AqiClient", client =>
+{
+    client.BaseAddress = new Uri("https://tiles.aqicn.org");
+});
 
 builder.Services.AddScoped<ICSVService, CSVService>();
 builder.Services.AddScoped<FirmsService>();
 builder.Services.AddScoped<FireDetection>();
 builder.Services.AddScoped<WindServices>();
 builder.Services.AddScoped<WindVariables>();
+builder.Services.AddScoped<AqiServices>();
 
 var app = builder.Build();
 
