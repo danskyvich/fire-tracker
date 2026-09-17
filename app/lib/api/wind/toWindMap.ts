@@ -10,7 +10,8 @@ export default function toWindMap(components: WindComponent[]): WindDataPoint[] 
         for (let row = 0; row < ny; row++ ) {
             for (let col = 0; col < nx; col++ ) {
                 const lat = la1 - (row * dy);
-                const lon = lo1 + (col * dx);
+                let lon = lo1 + (col * dx);
+                if (lon > 180) lon -= 360;
                 const index = row * nx + col;
     
                 const u = uComp.data[index];

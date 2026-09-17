@@ -36,7 +36,7 @@ const initializeWindOverlay = () => {
             const points = toWindMap(data);
             const result = generateWindTexture(points, {
                 width: 512,
-                height: 55,
+                height: 512,
                 bounds: [-180, -90, 180, 90],
                 power: 2,
             });
@@ -46,6 +46,7 @@ const initializeWindOverlay = () => {
 
             const bitmap = canvas.transferToImageBitmap();
 
+            console.log({uMin, uMax, vMin, vMax});
             self.postMessage(
                 { type: 'TEXTURE_DATA', data: { bitmap, uMin, uMax, vMin, vMax } },
                 [bitmap]
