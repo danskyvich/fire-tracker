@@ -7,7 +7,7 @@ interface MinimalDocument {
 }
 
 interface WorkerScope {
-    document?: MinimalDocument;
+    document?: MinimalDocument; // attach a document
     onmessage: ((event: MessageEvent) => void) | null;
     postMessage(message: unknown, transfer?: Transferable[]): void;
 }
@@ -35,14 +35,12 @@ const initializeWindOverlay = () => {
             const data = await getWindData();
             const points = toWindMap(data);
             const result = generateWindTexture(points, {
-                width: 720,
-                height: 360,
+                width: 512,
+                height: 55,
                 bounds: [-180, -90, 180, 90],
+                power: 2,
             });
 
-            // The library's types assume a main-thread HTMLCanvasElement.
-            // At runtime it's actually an OffscreenCanvas, because our
-            // `document.createElement` polyfill (above) is what created it.
             const canvas = result.canvas as unknown as OffscreenCanvas;
             const { uMin, uMax, vMin, vMax } = result;
 

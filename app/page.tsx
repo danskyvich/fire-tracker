@@ -9,25 +9,26 @@ import Zoom from "./components/ui/zoom";
 import { useState } from "react";
 
 export default function Home() {
-  // get the map from InteractiveMap
   const [map, setMap] = useState<maplibregl.Map | null>(null);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [activeLayers, setActiveLayers] = useState<Set<string>>( new Set(["fire-markers", "wind-map"]));
+  const [activeLayers, setActiveLayers] = useState<Set<string>>( new Set(["fire-markers"]));
+  const isMeasuring = activeIndex === 2;
 
-  const toggleLayers = (id: string) => {
+  const actionLayer = (id: string ) => {
     setActiveLayers((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
-  };
-
-  //toggle for measure-distance feature
-  const isMeasuring = activeIndex === 3;
-
+  }
+  
   return (
     <div className="flex w-full h-full">
-      <InteractiveMap getLiftedMap={setMap} isMeasuring={isMeasuring} activeLayers={activeLayers} />
+      <InteractiveMap getLiftedMap={setMap} isMeasuring={isMeasuring} activeLayers={activeLayers} setActiveLayers={setActiveLayers}/>
 
       {/* Floating container for UI */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none flex justify-between">
@@ -43,7 +44,7 @@ export default function Home() {
 
           {/* Middle */}
           <div className="flex z-50 justify-start items-center">
-            <Sidebar map={map} onIndex={setActiveIndex} activeIndex={activeIndex} activeLayers={activeLayers} toggleLayers={toggleLayers}/>
+            <Sidebar map={map} onIndex={setActiveIndex} activeIndex={activeIndex} activeLayers={activeLayers} toggleLayers={actionLayer}/>
           </div>
           <div />
           <div />

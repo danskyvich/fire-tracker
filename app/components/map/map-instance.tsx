@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 import { BASEMAP } from "@deck.gl/carto";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -11,15 +11,8 @@ import {FiresMap} from "./fires-layer";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import { getFires } from "@/app/lib/api/fires/fires";
 import FireInfo from "../ui/fire-info";
-import { generateWindTexture, WindParticleLayer, WindTextureResult } from "maplibre-gl-wind";
+import { WindParticleLayer } from "maplibre-gl-wind";
 
-interface InteractiveMapProps {
-  getLiftedMap: (map: maplibregl.Map) => void;
-  isMeasuring: boolean;
-  activeLayers: Set<string>;
-}
-
-// check if WebGL is supported
 function checkWebGLSupport(): boolean {
   if (typeof window === "undefined") return true;
   const canvas = document.createElement("canvas");
@@ -28,6 +21,13 @@ function checkWebGLSupport(): boolean {
     canvas.getContext("webgl") ||
     canvas.getContext("experimental-webgl")
   );
+}
+
+interface InteractiveMapProps {
+  getLiftedMap: (map: maplibregl.Map) => void;
+  isMeasuring: boolean;
+  activeLayers: Set<string>;
+  setActiveLayers: Dispatch<SetStateAction<Set<string>>>;
 }
 
 export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers }: InteractiveMapProps) {
@@ -63,7 +63,6 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
   // set fires
   useEffect(() => {
     getFires().then(setFires).catch((err) => setError(String(err)));
-
   }, []);
 
   // webworker for wind
@@ -99,7 +98,6 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
     if (fires.length === 0) return;
 
     const windLayerReady = activeLayers.has("wind-map") && windTexture?.bitmap;
-    console.log('windTexture at render: ', windTexture, windTexture?.canvas);
     overlayRef.current?.setProps({
       layers: [
         //fire
@@ -109,6 +107,7 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
         windLayerReady &&
           new WindParticleLayer({
             id: "wind",
+            // @ts-expect-error: image's type is unknown, but it accepts both bitmap and canvas
             image: windTexture.bitmap,
             imageUnscale: [
               Math.min(windTexture?.uMin ?? -50, windTexture?.vMin ?? -50),
@@ -119,13 +118,15 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
               Math.max(windTexture?.uMax ?? 30, windTexture?.vMax ?? 30),
             ],
             maxAge: 50,
-            speedFactor: 10,
+            animate: true,
+            speedFactor: 5,
+            width: 5,
             bounds: [-180, -90, 180, 90],
-            width: 4,
+            numParticles: 2000,
             colorRamp: [
-              [0.0, [59, 130, 189, 255]],
-              [0.5, [253, 174, 97, 255]], 
-              [1.0, [213, 62, 79, 255]],
+              [0.0, [230, 255, 36, 255]],
+              [0.5, [255, 180, 36, 255]], 
+              [1.0, [255, 79, 36, 255]],
             ],
           }),
       ].filter(Boolean),
@@ -136,7 +137,7 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
   useEffect(() => {
     // prompt the user to enable their location w/ consent
     const promptUserLocation = async () => {
-      const result = await getUserLocation(); // this line sends a prompt to user
+      const result = await getUserLocation(); 
       if (!result.success) {
         setError(result.error);
         return;
@@ -150,7 +151,6 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
     promptUserLocation();
   }, []);
 
-  // checks browser if WebGL is enabled/supported
   if (!webglSupported) {
     throw new Error("WebGL is not available in this browser/environment.");
   }
@@ -240,7 +240,7 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
           // when mouse moves
           map.on("mousemove", (e) => {
             if (!isMeasuringRef.current) {
-              map.getCanvas().style.cursor = ""; //returns to default cursor 
+              map.getCanvas().style.cursor = "";
               return;
             }
             // update features
@@ -261,9 +261,7 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
     async function initMap() {
       if (!mapContainer.current || mapRef.current) return;
 
-      if (!overlayRef.current) {
-        overlayRef.current = new MapboxOverlay({ layers: []});
-      };
+      if (!overlayRef.current) overlayRef.current = new MapboxOverlay({ layers: [] });
 
       const map = new maplibregl.Map({
         container: mapContainer.current,
@@ -317,7 +315,6 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
   }, [latitude, longitude, locationEnabled, getLiftedMap]);
 
   useEffect(() => {
-    // attach a ref to isMeasuring
     isMeasuringRef.current = isMeasuring;
 
     // when the user leaves the measure-distance, clear all 
