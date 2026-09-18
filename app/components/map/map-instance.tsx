@@ -4,7 +4,6 @@ import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 import { BASEMAP } from "@deck.gl/carto";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { getUserLocation } from "../../lib/location/geolocation";
 import { clearMeasureState, createMeasureState, toggleMeasurePoint } from "../../lib/location/measure/distance";
 import { FireDetection, WindTextureBitmap } from "@/app/lib/api/types";
 import {FiresMap} from "./fires-layer";
@@ -12,6 +11,7 @@ import { MapboxOverlay } from "@deck.gl/mapbox";
 import { getFires } from "@/app/lib/api/fires/fires";
 import FireInfo from "../ui/fire-info";
 import { WindParticleLayer } from "maplibre-gl-wind";
+import useGeolocation from "@/app/hooks/useGeolocation";
 
 function checkWebGLSupport(): boolean {
   if (typeof window === "undefined") return true;
@@ -31,6 +31,10 @@ interface InteractiveMapProps {
 }
 
 export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers }: InteractiveMapProps) {
+
+  const getLiftedMapRef = useRef(getLiftedMap);
+  const latRef = useRef<number | null>(null);
+  const lonRef = useRef<number| null>(null);
   // map containers
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -38,11 +42,6 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
   // webgl checks
   const [webglSupported] = useState(checkWebGLSupport);
   const [error, setError] = useState<string | null>(null);
-
-  // geolocation API
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
-  const [locationEnabled, setLocationEnabled] = useState<boolean | null>(null);
 
   // for measuring distance
   const measureRef = useRef(createMeasureState());
@@ -55,29 +54,35 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
   const [selectedFire, setSelectedFire] = useState<FireDetection | null>(null);
 
   // for wind
-  const [windTexture, setWindTexture] = useState<WindTextureBitmap | null>(null);
+  const [windTexture, setWindTexture] = useState<WindTextureBitmap | null>(
+    null,
+  );
 
   // webworkers
   const workerRef = useRef<Worker | null>(null);
 
-  // API
+  // for air quality
   const API_BASE = process.env.NEXT_PUBLIC_API_SITE ?? "http://localhost:5180";
+
+  const { latitude, longitude, error: geoError } = useGeolocation();
 
   // set fires
   useEffect(() => {
-    getFires().then(setFires).catch((err) => setError(String(err)));
+    getFires()
+      .then(setFires)
+      .catch((err) => setError(String(err)));
   }, []);
 
   // webworker for wind
   useEffect(() => {
     workerRef.current = new Worker(
-      new URL("../../workers/wind-overlay-worker.ts", import.meta.url)
+      new URL("../../workers/wind-overlay-worker.ts", import.meta.url),
     );
     workerRef.current.postMessage({
-      type: 'BEGIN',
+      type: "BEGIN",
     });
 
-    workerRef.current.onmessage = function(event) {
+    workerRef.current.onmessage = function (event) {
       const { type, data } = event.data;
 
       switch (type) {
@@ -88,12 +93,12 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
           setError(data.message);
           break;
       }
-    }
+    };
 
     workerRef.current.onerror = (e) => setError(e.message);
     return () => {
       workerRef.current?.terminate();
-    }
+    };
   }, []);
 
   // conditionally display fire overlay
@@ -128,7 +133,7 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
             numParticles: 2000,
             colorRamp: [
               [0.0, [230, 255, 36, 255]],
-              [0.5, [255, 180, 36, 255]], 
+              [0.5, [255, 180, 36, 255]],
               [1.0, [255, 79, 36, 255]],
             ],
           }),
@@ -137,86 +142,37 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
     });
   }, [fires, activeLayers, windTexture]);
 
-  useEffect(() => {
-    // prompt the user to enable their location w/ consent
-    const promptUserLocation = async () => {
-      const result = await getUserLocation(); 
-      if (!result.success) {
-        setError(result.error);
-        return;
-      } else {
-        setLocationEnabled(true);
-        setLatitude(result.latitude);
-        setLongitude(result.longitude);
-      }
-    };
-
-    promptUserLocation();
-  }, []);
-
   if (!webglSupported) {
     throw new Error("WebGL is not available in this browser/environment.");
   }
 
   useEffect(() => {
-    // use geojson to add a point above the map
-    // this point is for the current user location
+    const map = mapRef.current;
+    if (!map || !map.getLayer("air-quality")) return;
+
+    map.setLayoutProperty(
+      "air-quality",
+      "visibility",
+      activeLayers.has("air-quality") ? "visible" : "none",
+    )
+  }, [activeLayers]);
+
+  // for positioning
+  useEffect(() => {
+    latRef.current = latitude;
+    lonRef.current = longitude;
+  }, [latitude, longitude]);
+
+  // map
+  useEffect(() => {
     const loadMap = (map: maplibregl.Map) =>
       new Promise<void>((resolve) =>
         map.on("load", () => {
-          map.addSource("user_location", {
-            type: "geojson",
-            data: {
-              type: "FeatureCollection",
-              features: [
-                {
-                  type: "Feature",
-                  geometry: {
-                    type: "Point",
-                    coordinates: [longitude ?? 121.05, latitude ?? 14.65],
-                  },
-                  properties: {
-                    name: "Location",
-                    type: "Point",
-                  },
-                },
-              ],
-            },
-          });
-
-          map.addSource("aqicn-layer", {
-            type: "raster",
-            tiles: [
-              `${API_BASE}/api/Aqi/tiles/{z}/{x}/{y}`
-            ],
-            tileSize: 256,
-            attribution:
-              'Air Quality data © <a href="https://aqicn.org" target="_blank">WAQI</a>',
-          });
-
-          map.addLayer({
-            id: 'aqicn-layer',
-            type: 'raster',
-            source: 'aqicn-layer',
-            paint: {
-              'raster-opacity': 0.85
-            },
-          })
-
           // this section renders the points and lines on the map
           // modify points and lines appearance here
           map.addSource("geojson", {
             type: "geojson",
             data: measureRef.current.geojson,
-          });
-
-          // layer for points
-          map.addLayer({
-            id: "measure-points",
-            type: "circle",
-            source: "geojson",
-            paint: { "circle-radius": 5, "circle-color": "#56ae8e" },
-            filter: ["in", "$type", "Point"],
           });
 
           // layer for linestrings
@@ -229,12 +185,32 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
             filter: ["in", "$type", "LineString"],
           });
 
+          // for air-quality
+          map.addSource("air-quality", {
+            type: "raster",
+            tiles: [`${API_BASE}/api/Aqi/tiles/{z}/{x}/{y}`],
+            tileSize: 256,
+            attribution:
+              'Air Quality data © <a href="https://aqicn.org" target="_blank">WAQI</a>',
+          });
 
-          map.on('click', (e) => {
+          map.addLayer({
+            id: "air-quality",
+            type: "raster",
+            source: "air-quality",
+            paint: {
+              "raster-opacity": 0.85,
+            },
+            layout: {
+              visibility: "none",
+            },
+          });
+
+          map.on("click", (e) => {
             if (!isMeasuringRef.current) return;
 
             const features = map.queryRenderedFeatures(e.point, {
-              layers: ["measure-points"]
+              layers: ["measure-points"],
             });
             const { geojson, distanceKm } = toggleMeasurePoint(
               measureRef.current,
@@ -242,22 +218,23 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
               e.lngLat,
             );
 
-            // if there is distance, update the total km text 
+            // if there is distance, update the total km text
             // distanceRef is where the text lies
             if (distanceRef.current) {
-              distanceRef.current.innerHTML = '';
+              distanceRef.current.innerHTML = "";
               if (distanceKm !== null) {
                 const value = document.createElement("pre");
                 value.textContent = `Total distance: ${distanceKm.toLocaleString()} km`;
                 distanceRef.current.appendChild(value);
               }
-            };
+            }
 
             // this call updates both measure-points and measure-line since
             // they came from the same source (which is geojson) -> map.addLayer({ source: geojson })
-            (map.getSource("geojson") as maplibregl.GeoJSONSource).setData(geojson);
-          })
-
+            (map.getSource("geojson") as maplibregl.GeoJSONSource).setData(
+              geojson,
+            );
+          });
 
           // when mouse moves
           map.on("mousemove", (e) => {
@@ -283,13 +260,14 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
     async function initMap() {
       if (!mapContainer.current || mapRef.current) return;
 
-      if (!overlayRef.current) overlayRef.current = new MapboxOverlay({ layers: [] });
+      if (!overlayRef.current)
+        overlayRef.current = new MapboxOverlay({ layers: [] });
 
       const map = new maplibregl.Map({
         container: mapContainer.current,
         style: BASEMAP.DARK_MATTER,
         interactive: true,
-        center: [longitude ?? 121.05, latitude ?? 14.65], //default to Quezon City
+        center: [lonRef.current ?? 121.05, latRef.current ?? 14.65],
         zoom: 6,
         pitch: 0,
         maxPitch: 0,
@@ -305,12 +283,34 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
 
       map.addControl(scale, "bottom-left");
 
-      // wait for the point to load before adding it to basemap as a layer.
-      await loadMap(map);
+      await loadMap(map); //load the map
 
-      getLiftedMap(map);
+      getLiftedMapRef.current(map);
 
-      if (locationEnabled) {
+      if (geoError === null) {
+        map.addSource("user_location", {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: [
+              {
+                type: "Feature",
+                geometry: {
+                  type: "Point",
+                  coordinates: [
+                    lonRef.current ?? 121.05,
+                    latRef.current ?? 14.65,
+                  ],
+                },
+                properties: {
+                  name: "Location",
+                  type: "Point",
+                },
+              },
+            ],
+          },
+        });
+
         map.addLayer({
           id: "user_location_point",
           type: "circle",
@@ -334,13 +334,12 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
       mapRef.current?.remove();
       mapRef.current = null;
     };
-  }, [latitude, longitude, locationEnabled, getLiftedMap]);
+  }, [API_BASE, geoError]);
 
+  // measuring effects
   useEffect(() => {
     isMeasuringRef.current = isMeasuring;
 
-    // when the user leaves the measure-distance, clear all 
-    // lines and points
     if (!isMeasuring && mapRef.current) {
       clearMeasureState(measureRef.current); //clear data
       const source = mapRef.current.getSource("geojson") as
@@ -352,18 +351,24 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
     }
   }, [isMeasuring]);
 
+  useEffect(() => {
+    getLiftedMapRef.current = getLiftedMap;
+  }, [getLiftedMap]);
+
   return (
-    <>
-      <div className="relative w-dvw h-dvh">
-        <div ref={mapContainer} id="map-canvas" className="w-full h-full" />
-        <div
-          ref={distanceRef}
-          className={`${!isMeasuring && "hidden"} absolute bg-background px-2 py-1 border border-white rounded-lg bottom-10 left-4 text-sm text-white z-10`}
+    <div className="relative w-dvw h-dvh">
+      <div ref={mapContainer} id="map-canvas" className="w-full h-full" />
+      <div
+        ref={distanceRef}
+        className={`${!isMeasuring && "hidden"} absolute bg-background px-2 py-1 border border-white rounded-lg bottom-10 left-4 text-sm text-white z-10`}
+      />
+      {selectedFire && (
+        <FireInfo
+          selectedFire={selectedFire}
+          onClose={() => setSelectedFire(null)}
+          open
         />
-        {
-          selectedFire && <FireInfo selectedFire={selectedFire} onClose={() => setSelectedFire(null)} open />
-        }
-      </div>
-    </>
+      )}
+    </div>
   );
 }

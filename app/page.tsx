@@ -14,7 +14,7 @@ export default function Home() {
   const [activeLayers, setActiveLayers] = useState<Set<string>>( new Set(["fire-markers"]));
   const isMeasuring = activeIndex === 2;
 
-  const actionLayer = (id: string ) => {
+  const toggleLayer = (id: string) => {
     setActiveLayers((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -24,11 +24,16 @@ export default function Home() {
       }
       return next;
     });
-  }
+  };
   
   return (
     <div className="flex w-full h-full">
-      <InteractiveMap getLiftedMap={setMap} isMeasuring={isMeasuring} activeLayers={activeLayers} setActiveLayers={setActiveLayers}/>
+      <InteractiveMap
+        getLiftedMap={setMap}
+        isMeasuring={isMeasuring}
+        activeLayers={activeLayers}
+        setActiveLayers={setActiveLayers}
+      />
 
       {/* Floating container for UI */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none flex justify-between">
@@ -44,13 +49,19 @@ export default function Home() {
 
           {/* Middle */}
           <div className="flex z-50 justify-start items-center">
-            <Sidebar map={map} onIndex={setActiveIndex} activeIndex={activeIndex} activeLayers={activeLayers} toggleLayers={actionLayer}/>
+            <Sidebar
+              map={map}
+              onIndex={setActiveIndex}
+              activeIndex={activeIndex}
+              activeLayers={activeLayers}
+              toggleLayers={toggleLayer}
+            />
           </div>
           <div />
           <div />
 
           {/* Lower bar */}
-          <div/>
+          <div />
 
           <div />
 

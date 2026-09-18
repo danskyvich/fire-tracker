@@ -1,11 +1,11 @@
 import {Locate, Layers, Wind, Ruler, List, Info} from 'lucide-react'
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from "maplibre-gl";
-import { getUserLocation } from '@/app/lib/location/geolocation';
 import Legends from './legends';
 import Layer from "./layers"
 import WebAppPage from './web-app-page';
 import ErrorModal from './error-modal';
+import useGeolocation from '@/app/hooks/useGeolocation';
 
 interface SidebarProps {
   map: maplibregl.Map | null,
@@ -23,24 +23,28 @@ export default function Sidebar({
   toggleLayers,
 }: SidebarProps) {
   const [error, setError] = useState<string | null>(null);
-  const [lat, setLat] = useState<number>(0);
-  const [long, setLong] = useState<number>(0);
-
+  const [lat, setLat] = useState<number | null>(0);
+  const [lon, setLon] = useState<number | null>(0);
+  
+  // Geolocation API
+  const { latitude, longitude, error: geoError } = useGeolocation();
   useEffect(() => {
     const retrievePosition = async () => {
-      const result = await getUserLocation();
-      if (!result.success) {
-        setError(result.error ?? "Fetching position error");
+      if (!latitude || !longitude) return;
+      if (geoError === null) {
+        setLat(latitude);
+        setLon(longitude);
+        return;
+      } else {
+        setError(geoError);
         return;
       }
-      setLat(result.latitude);
-      setLong(result.longitude);
-      return;
     };
 
     retrievePosition();
-  });
+  }, [geoError, latitude, longitude]);
 
+  // SIDEBAR
   const SIDEBAR_ITEMS = [
     {
       icon: <Locate size={25} className="min-w-3 h-auto cursor-pointer" />,
@@ -66,14 +70,16 @@ export default function Sidebar({
 
   // navigate to the user's location
   if (activeIndex === 0) {
+    if (!lat || !lon) return;
     map?.flyTo({
-      center: [long, lat],
+      center: [lon, lat],
       zoom: 15,
       essential: true,
     });
   }
 
   if (!map) return;
+  
   return (
     <>
       {error && <ErrorModal message={error} />}
