@@ -12,6 +12,7 @@ import { getFires } from "@/app/lib/api/fires/fires";
 import FireInfo from "../ui/fire-info";
 import { WindParticleLayer } from "maplibre-gl-wind";
 import useGeolocation from "@/app/hooks/useGeolocation";
+import AqiInfo from "../ui/aqi-info";
 
 function checkWebGLSupport(): boolean {
   if (typeof window === "undefined") return true;
@@ -369,6 +370,10 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
           open
         />
       )}
+      {
+        activeLayers.has("air-quality") &&
+        <AqiInfo/>
+      }
     </div>
   );
 }

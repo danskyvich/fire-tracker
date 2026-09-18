@@ -61,13 +61,13 @@ export default function Home() {
           <div />
 
           {/* Lower bar */}
-          <div />
-
-          <div />
-
-          <div className="flex z-50 items-end justify-end pr-5 w-full h-full">
+          <div className="absolute left-30 bottom-3">
             <Zoom map={map} />
           </div>
+
+          <div />
+
+          <div />
         </div>
       </div>
     </div>
