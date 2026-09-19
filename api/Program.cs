@@ -31,7 +31,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
-    options.InstanceName = "WindCache_";
+    options.InstanceName = "WildfireTrackerCache";
 });
 
 // NASA FIRMS API

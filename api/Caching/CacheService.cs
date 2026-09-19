@@ -23,6 +23,7 @@ namespace WildFireTracker.cache
         public async Task<T?> GetCacheData<T>(string key)
         {
             var data = await _cache.GetStringAsync(key);
+            Console.WriteLine(data is null ? $"Cache MISS: {key}" : $"Cache HIT: {key}");
             if (data is null) return default(T);
             var jsonData = JsonSerializer.Deserialize<T>(data);
             return jsonData;

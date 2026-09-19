@@ -1,4 +1,5 @@
 using Microsoft.Net.Http.Headers;
+using WildFireTracker.cache;
 
 namespace WildFireTracker.wind
 {
@@ -6,11 +7,13 @@ namespace WildFireTracker.wind
     {
         public readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
+        private readonly ICacheService _cacheService;
 
-        public WindServices(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public WindServices(IHttpClientFactory httpClientFactory, IConfiguration configuration, ICacheService cacheService)
         {
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
+            _cacheService = cacheService;
         }
 
         public async Task<T> GetTAsync<T>()
