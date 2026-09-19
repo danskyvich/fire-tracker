@@ -1,34 +1,48 @@
 using System;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
+using SkiaSharp;
 
 namespace WildFireTracker.wind
 {
     // describe the final result
-    public readonly struct WindPoint
+    public readonly struct WindTexture
     {
         public readonly float Lat, Lon, Speed, Direction;
-        public WindPoint(float lat, float lon, float speed, float direction)
+        public WindTexture(float lat, float lon, float speed, float direction)
         => (Lat, Lon, Speed, Direction) = (lat, lon, speed, direction);
     }
 
     // actual computational logic
     public class WindComputationServices
     {
-        public byte[] GenerateWindTexture(WindComponent uComponent, WindComponent vComponent)
+        public (byte[] ImageBytes, float uMin, float uMax, float vMin, float vMax, float lo1, float lo2, float la1, float la2) GenerateWindTexture(WindComponent uComponent, WindComponent vComponent)
         {
             ArgumentNullException.ThrowIfNull(uComponent);
             ArgumentNullException.ThrowIfNull(vComponent);
 
             WindVariables headerValues = uComponent.header;
+
+            // retrieve all values
             int nx = headerValues.nx;
             int ny = headerValues.ny;
             var uValue = uComponent.data;
             var vValue = vComponent.data;
-            double uMin = uValue.Min(), uMax = vValue.Min();
-            double vMin = uValue.Max(), vMax = vValue.Max();
-            
-            using var image = new Image<Rgba32>(nx, ny);
+            double lo1 = headerValues.lo1;
+            double la1 = headerValues.la1;
+            double lo2 = headerValues.lo2;
+            double la2 = headerValues.la2;
+
+            // sanity checks
+            double uMin = uValue.Min(), uMax = vValue.Max();
+            double vMin = uValue.Min(), vMax = vValue.Max();
+            var uRange = uMin - uMax;
+            var vRange = vMin - vMax;
+
+            Console.WriteLine($"nx={nx}, ny={ny}, uData.Length={uValue.Length}, vData.Length={vValue.Length}");
+            Console.WriteLine($"uMin={uMin}, uMax={uMax}, vMin={vMin}, vMax={vMax}");
+            Console.WriteLine($"Sample values: {string.Join(", ", uValue.Take(10))}");
+
+            var pixels = new SKColor[nx * ny];
+
 
             for (var row = 0; row < ny; row++)
             {
@@ -38,18 +52,22 @@ namespace WildFireTracker.wind
                     var actualU = uComponent.data[index];
                     var actualV = vComponent.data[index];
 
-                    var uRange = uMin - uMax;
-                    var vRange = vMin - vMax;
                     byte encodedU = uRange == 0 ? (byte)0 : (byte)(((actualU - uMin) / (uMax - uMin)) * 255);
                     byte encodedV = vRange == 0 ? (byte)0 : (byte)(((actualV - vMin) / (vMax - vMin)) * 255);
 
-                    image[col, row] = new Rgba32(encodedU, encodedV, 0, 255);
+                    pixels[index] = new SKColor(encodedU, encodedV, 0, 255);
                     
                 }
             }
+            using var bitmap = new SKBitmap(nx, ny);
+            bitmap.Pixels = pixels;
+
+            using var image = SKImage.FromBitmap(bitmap);
+            using var data = image.Encode(SKEncodedImageFormat.Png, 100);
             using var ms = new MemoryStream();
-            image.SaveAsPng(ms);
-            return ms.ToArray();
+            data.SaveTo(ms);
+
+            return (ms.ToArray(), (float)uMin, (float)uMax, (float)vMin, (float)vMax, (float)lo1, (float)lo2, (float)la1, (float)la2);
         }
     }
 }

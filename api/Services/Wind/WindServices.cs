@@ -6,14 +6,13 @@ namespace WildFireTracker.wind
     public class WindServices
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IConfiguration _configuration;
         private readonly ICacheService _cacheService;
         private readonly WindComputationServices _computationService;
+        public record WindTextureResult(byte[] ImageBytes, float UMin, float UMax, float VMin, float VMax, float Lo1, float Lo2, float La1, float La2);
 
         public WindServices(IHttpClientFactory httpClientFactory, IConfiguration configuration, ICacheService cacheService, WindComputationServices computationServices)
         {
             _httpClientFactory = httpClientFactory;
-            _configuration = configuration;
             _cacheService = cacheService;
             _computationService = computationServices;
         }
@@ -52,19 +51,20 @@ namespace WildFireTracker.wind
             return cacheContent;
         }
 
-        public async Task<byte[]> GetWindTextureAsync()
+        public async Task<WindTextureResult> GetWindTextureAsync()
         {
             const string computedCacheKey = "wind:computed:noaa-docker";
-            var cached = await _cacheService.GetCacheData<byte[]>(computedCacheKey);
-            if (cached != null) return cached;
+            var cached = await _cacheService.GetCacheData<(byte[] bytes, float uMin, float uMax, float vMin, float vMax, float lo1, float lo2, float la1, float la2)>(computedCacheKey);
 
             var components = await GetWindComponentsAsync();
             var uComponents = components.First(c => c.header.parameterNumber == 2);
             var vComponents = components.First(c => c.header.parameterNumber == 3);
 
-            var textureBytes = _computationService.GenerateWindTexture(uComponents, vComponents);
-            await _cacheService.SetCacheData(computedCacheKey, textureBytes, TimeSpan.FromMinutes(10));
-            return textureBytes;
+            var (bytes, uMin, uMax, vMin, vMax, lo1, lo2, la1, la2) = _computationService.GenerateWindTexture(uComponents, vComponents);
+            var result = new WindTextureResult(bytes, uMin, uMax, vMin, vMax, lo1, lo2, la1, la2);
+
+            await _cacheService.SetCacheData(computedCacheKey, result, TimeSpan.FromMinutes(10));
+            return result;
         }
     }
 }

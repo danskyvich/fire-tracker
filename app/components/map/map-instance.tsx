@@ -5,14 +5,14 @@ import * as maplibregl from "maplibre-gl";
 import { BASEMAP } from "@deck.gl/carto";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { clearMeasureState, createMeasureState, toggleMeasurePoint } from "../../lib/location/measure/distance";
-import { FireDetection, WindTextureBitmap } from "@/app/lib/api/types";
+import { FireDetection, WindTexture } from "@/app/lib/api/types";
 import {FiresMap} from "./fires-layer";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import { getFires } from "@/app/lib/api/fires/fires";
 import FireInfo from "../ui/fire-info";
-import { WindParticleLayer } from "maplibre-gl-wind";
 import useGeolocation from "@/app/hooks/useGeolocation";
 import AqiInfo from "../ui/aqi-info";
+import WindOverlay from "@/app/lib/wind/generateWindLayer";
 
 function checkWebGLSupport(): boolean {
   if (typeof window === "undefined") return true;
@@ -31,14 +31,20 @@ interface InteractiveMapProps {
   setActiveLayers: Dispatch<SetStateAction<Set<string>>>;
 }
 
-export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers }: InteractiveMapProps) {
+const WIND_BOUNDS: [number, number, number, number] = [-180, -90, 180, 90];
 
+export default function InteractiveMap({
+  getLiftedMap,
+  isMeasuring,
+  activeLayers,
+}: InteractiveMapProps) {
   const getLiftedMapRef = useRef(getLiftedMap);
   const latRef = useRef<number | null>(null);
-  const lonRef = useRef<number| null>(null);
+  const lonRef = useRef<number | null>(null);
   // map containers
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const [mapInstance, setMapInstance] = useState<maplibregl.Map | null>(null);
 
   // webgl checks
   const [webglSupported] = useState(checkWebGLSupport);
@@ -55,12 +61,7 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
   const [selectedFire, setSelectedFire] = useState<FireDetection | null>(null);
 
   // for wind
-  const [windTexture, setWindTexture] = useState<WindTextureBitmap | null>(
-    null,
-  );
-
-  // webworkers
-  const workerRef = useRef<Worker | null>(null);
+  const [wind, setWind] = useState<WindTexture | null>(null);
 
   // for air quality
   const API_BASE = process.env.NEXT_PUBLIC_API_SITE ?? "http://localhost:5180";
@@ -74,74 +75,43 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
       .catch((err) => setError(String(err)));
   }, []);
 
-  // webworker for wind
   useEffect(() => {
-    workerRef.current = new Worker(
-      new URL("../../workers/wind-overlay-worker.ts", import.meta.url),
-    );
-    workerRef.current.postMessage({
-      type: "BEGIN",
-    });
+    const fetchWind = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/wind/texture`);
+        if (!response.ok)
+          throw new Error(`Failed fetching wind data: ${response.status}`);
 
-    workerRef.current.onmessage = function (event) {
-      const { type, data } = event.data;
+        const uMin = parseFloat(response.headers.get("X-Wind-UMin")!);
+        const uMax = parseFloat(response.headers.get("X-Wind-UMax")!);
+        const vMin = parseFloat(response.headers.get("X-Wind-VMin")!);
+        const vMax = parseFloat(response.headers.get("X-Wind-VMax")!);
+        const lo1 = parseFloat(response.headers.get("X-Wind-Lo1")!);
+        const lo2 = parseFloat(response.headers.get("X-Wind-Lo2")!);
+        const la1 = parseFloat(response.headers.get("X-Wind-La1")!);
+        const la2 = parseFloat(response.headers.get("X-Wind-La2")!);
+        const bitmap = await createImageBitmap(await response.blob());
+        console.log({ uMin, uMax, vMin, vMax, lo1, lo2, la1, la2 });
 
-      switch (type) {
-        case "TEXTURE_DATA":
-          setWindTexture(data);
-          break;
-        case "WORKER_ERROR":
-          setError(data.message);
-          break;
+        setWind({ bitmap, uMin, uMax, vMin, vMax, lo1, lo2, la1, la2});
+      } catch (err) {
+        setError(String(err));
       }
     };
-
-    workerRef.current.onerror = (e) => setError(e.message);
-    return () => {
-      workerRef.current?.terminate();
-    };
-  }, []);
+    fetchWind();
+  }, [API_BASE]);
 
   // conditionally display fire overlay
   useEffect(() => {
-    if (fires.length === 0) return;
-
-    const windLayerReady = activeLayers.has("wind-map") && windTexture?.bitmap;
     overlayRef.current?.setProps({
       layers: [
         //fire
         activeLayers.has("fire-markers") &&
           FiresMap({ fires, onChose: setSelectedFire }),
-        //wind
-        windLayerReady &&
-          new WindParticleLayer({
-            id: "wind",
-            // @ts-expect-error: image's type is unknown, but it accepts both bitmap and canvas
-            image: windTexture.bitmap,
-            imageUnscale: [
-              Math.min(windTexture?.uMin ?? -50, windTexture?.vMin ?? -50),
-              Math.max(windTexture?.uMax ?? 50, windTexture?.vMax ?? 50),
-            ],
-            speedRange: [
-              0,
-              Math.max(windTexture?.uMax ?? 30, windTexture?.vMax ?? 30),
-            ],
-            maxAge: 50,
-            animate: true,
-            speedFactor: 5,
-            width: 5,
-            bounds: [-180, -90, 180, 90],
-            numParticles: 2000,
-            colorRamp: [
-              [0.0, [230, 255, 36, 255]],
-              [0.5, [255, 180, 36, 255]],
-              [1.0, [255, 79, 36, 255]],
-            ],
-          }),
       ].filter(Boolean),
       getCursor: ({ isHovering }) => (isHovering ? "pointer" : "default"),
     });
-  }, [fires, activeLayers, windTexture]);
+  }, [fires, activeLayers]);
 
   if (!webglSupported) {
     throw new Error("WebGL is not available in this browser/environment.");
@@ -155,7 +125,7 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
       "air-quality",
       "visibility",
       activeLayers.has("air-quality") ? "visible" : "none",
-    )
+    );
   }, [activeLayers]);
 
   // for positioning
@@ -327,6 +297,7 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
 
       // assign map to an element
       mapRef.current = map;
+      setMapInstance(map);
     }
 
     initMap();
@@ -363,6 +334,13 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
         ref={distanceRef}
         className={`${!isMeasuring && "hidden"} absolute bg-background px-2 py-1 border border-white rounded-lg bottom-10 left-4 text-sm text-white z-10`}
       />
+      {activeLayers.has("wind-map") && wind && (
+        <WindOverlay
+          map={mapInstance}
+          wind={wind}
+          bounds={WIND_BOUNDS}
+        />
+      )}
       {selectedFire && (
         <FireInfo
           selectedFire={selectedFire}
@@ -370,10 +348,7 @@ export default function InteractiveMap({ getLiftedMap, isMeasuring, activeLayers
           open
         />
       )}
-      {
-        activeLayers.has("air-quality") &&
-        <AqiInfo/>
-      }
+      {activeLayers.has("air-quality") && <AqiInfo />}
     </div>
   );
 }

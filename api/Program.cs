@@ -22,9 +22,13 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: MyAllowSpecificOrigins, 
         policy =>
         {
-            policy.WithOrigins("http://localhost:3000");
-            policy.AllowAnyHeader();
-            policy.AllowAnyMethod();
+            policy.WithOrigins("http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .WithExposedHeaders(
+                "X-Wind-UMin", "X-Wind-UMax", "X-Wind-VMin", "X-Wind-VMax",
+                "X-Wind-Lo1", "X-Wind-La1", "X-Wind-Lo2", "X-Wind-La2"
+            );
         });
 });
 
