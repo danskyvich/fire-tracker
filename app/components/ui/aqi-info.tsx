@@ -37,12 +37,12 @@ export default function AqiInfo() {
         <p className="font-sans font-light">Air Quality Index </p>
         <div className="grid grid-cols-[27%_1fr] gap-x-4 grid-rows-6 w-full h-full items-center justify-center">
           {AQI_COLORS.map((item) => (
-            <>
-              <div className={`flex items-center justify-center w-full px-1 py-1 ${item.color} font-sans tracking-tighter text-sm rounded-md`} key={item.id}>
-                <p className="text-sm">{item.range}</p>
+            <div key={item.id} className="contents">
+              <div className={`flex items-center justify-center w-full px-1 py-0.5 ${item.color} font-sans tracking-tighter text-sm rounded-md`}>
+                <p className="text-[0.8rem]">{item.range}</p>
               </div>
               <p className="text-sm">{item.value}</p>
-            </>
+            </div>
           ))}
         </div>
       </div>

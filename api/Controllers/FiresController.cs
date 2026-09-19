@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 
@@ -7,11 +8,11 @@ namespace WildFireTracker.fires
     [Route("api/[controller]")]
     public class FiresController : ControllerBase
     {
-        private readonly FirmsService _firmsService;
+        private readonly FireServices _fireServices;
 
-        public FiresController(FirmsService firmsService)
+        public FiresController(FireServices fireServices)
         {
-            _firmsService = firmsService;
+            _fireServices = fireServices;
         }
 
         [HttpGet]
@@ -19,7 +20,7 @@ namespace WildFireTracker.fires
         {
             try
             {
-                var fires = await _firmsService.GetFiresAsync();
+                var fires = await _fireServices.GetFiresAsync();
                 return Ok(fires);
             }
             catch (HttpRequestException ex)

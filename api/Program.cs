@@ -1,6 +1,9 @@
 using WildFireTracker.fires;
 using WildFireTracker.wind;
 using WildFireTracker.aqi;
+using WildFireTracker.cache;
+using StackExchange.Redis;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +28,12 @@ builder.Services.AddCors(options =>
         });
 });
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
+    options.InstanceName = "WindCache_";
+});
+
 // NASA FIRMS API
 builder.Services.AddHttpClient("FIRMSClient", client =>
 {
@@ -40,11 +49,12 @@ builder.Services.AddHttpClient("AqiClient", client =>
 });
 
 builder.Services.AddScoped<ICSVService, CSVService>();
-builder.Services.AddScoped<FirmsService>();
 builder.Services.AddScoped<FireDetection>();
 builder.Services.AddScoped<WindServices>();
 builder.Services.AddScoped<WindVariables>();
 builder.Services.AddScoped<AqiServices>();
+builder.Services.AddScoped<FireServices>();
+builder.Services.AddScoped<ICacheService, CacheService>();
 
 var app = builder.Build();
 
