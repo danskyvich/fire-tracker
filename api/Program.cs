@@ -55,6 +55,7 @@ builder.Services.AddScoped<WindVariables>();
 builder.Services.AddScoped<AqiServices>();
 builder.Services.AddScoped<FireServices>();
 builder.Services.AddScoped<ICacheService, CacheService>();
+builder.Services.AddScoped<WindComputationServices>();
 
 var app = builder.Build();
 

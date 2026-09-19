@@ -1,6 +1,5 @@
 import { generateWindTexture } from "maplibre-gl-wind";
 import { getWindData } from "../lib/api/wind/getWindData";
-import toWindMap from "../lib/api/wind/toWindMap";
 
 interface MinimalDocument {
     createElement(tag: string): OffscreenCanvas;
@@ -33,8 +32,7 @@ const initializeWindOverlay = () => {
     (async () => {
         try {
             const data = await getWindData();
-            const points = toWindMap(data);
-            const result = generateWindTexture(points, {
+            const result = generateWindTexture(data, {
                 width: 512,
                 height: 512,
                 bounds: [-180, -90, 180, 90],

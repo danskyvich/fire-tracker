@@ -7,16 +7,18 @@ namespace WildFireTracker.wind
     public class WindController : ControllerBase
     {
         private readonly WindServices _windService;
+        private readonly WindComputationServices _windComputationService;
 
-        public WindController(WindServices windServices)
+        public WindController(WindServices windServices, WindComputationServices windComputationServices)
         {
             _windService = windServices;
+            _windComputationService = windComputationServices;
         }
-        [HttpGet]
-        public async Task<IActionResult> Get()
+        [HttpGet("texture")]
+        public async Task<IActionResult> GetWind()
         {
-            var data = await _windService.GetWindComponentsAsync();
-            return Ok(data);
+            var points = await _windService.GetWindTextureAsync();
+            return File(points, "image/png");
         }
     }
 }

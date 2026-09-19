@@ -8,12 +8,14 @@ namespace WildFireTracker.wind
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
         private readonly ICacheService _cacheService;
+        private readonly WindComputationServices _computationService;
 
-        public WindServices(IHttpClientFactory httpClientFactory, IConfiguration configuration, ICacheService cacheService)
+        public WindServices(IHttpClientFactory httpClientFactory, IConfiguration configuration, ICacheService cacheService, WindComputationServices computationServices)
         {
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
             _cacheService = cacheService;
+            _computationService = computationServices;
         }
 
         public async Task<List<WindComponent>> GetWindComponentsAsync()
@@ -48,6 +50,21 @@ namespace WildFireTracker.wind
                 return result;
             }
             return cacheContent;
+        }
+
+        public async Task<byte[]> GetWindTextureAsync()
+        {
+            const string computedCacheKey = "wind:computed:noaa-docker";
+            var cached = await _cacheService.GetCacheData<byte[]>(computedCacheKey);
+            if (cached != null) return cached;
+
+            var components = await GetWindComponentsAsync();
+            var uComponents = components.First(c => c.header.parameterNumber == 2);
+            var vComponents = components.First(c => c.header.parameterNumber == 3);
+
+            var textureBytes = _computationService.GenerateWindTexture(uComponents, vComponents);
+            await _cacheService.SetCacheData(computedCacheKey, textureBytes, TimeSpan.FromMinutes(10));
+            return textureBytes;
         }
     }
 }
