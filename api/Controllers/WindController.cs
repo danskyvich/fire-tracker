@@ -15,7 +15,7 @@ namespace WildFireTracker.wind
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var data = await _windService.GetTAsync<List<WindComponent>>();
+            var data = await _windService.GetWindComponentsAsync();
             return Ok(data);
         }
     }
