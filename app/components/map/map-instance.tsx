@@ -6,7 +6,7 @@ import { BASEMAP } from "@deck.gl/carto";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { clearMeasureState, createMeasureState, toggleMeasurePoint } from "../../lib/location/measure/distance";
 import { FireDetection, WindTexture } from "@/app/lib/api/types";
-import {FiresMap} from "./fires-layer";
+import {FiresMap} from "../../lib/api/fires/fires-layer";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import { getFires } from "@/app/lib/api/fires/fires";
 import FireInfo from "../ui/fire-info";
