@@ -12,7 +12,7 @@ import { getFires } from "@/app/lib/api/fires/fires";
 import FireInfo from "../ui/fire-info";
 import useGeolocation from "@/app/hooks/useGeolocation";
 import AqiInfo from "../ui/aqi-info";
-import WindOverlay from "@/app/lib/wind/generateWindLayer";
+import useWindParticleLayer from "@/app/hooks/useWindParticleLayer";
 
 function checkWebGLSupport(): boolean {
   if (typeof window === "undefined") return true;
@@ -62,6 +62,11 @@ export default function InteractiveMap({
 
   // for wind
   const [wind, setWind] = useState<WindTexture | null>(null);
+  const windLayer = useWindParticleLayer({
+    map: mapInstance,
+    wind: activeLayers.has("wind-map") ? wind : null,
+    bounds: WIND_BOUNDS,
+  });
 
   // for air quality
   const API_BASE = process.env.NEXT_PUBLIC_API_SITE ?? "http://localhost:5180";
@@ -108,10 +113,11 @@ export default function InteractiveMap({
         //fire
         activeLayers.has("fire-markers") &&
           FiresMap({ fires, onChose: setSelectedFire }),
+        windLayer,
       ].filter(Boolean),
       getCursor: ({ isHovering }) => (isHovering ? "pointer" : "default"),
     });
-  }, [fires, activeLayers]);
+  }, [fires, activeLayers, windLayer]);
 
   if (!webglSupported) {
     throw new Error("WebGL is not available in this browser/environment.");
@@ -334,13 +340,6 @@ export default function InteractiveMap({
         ref={distanceRef}
         className={`${!isMeasuring && "hidden"} absolute bg-background px-2 py-1 border border-white rounded-lg bottom-10 left-4 text-sm text-white z-10`}
       />
-      {activeLayers.has("wind-map") && wind && (
-        <WindOverlay
-          map={mapInstance}
-          wind={wind}
-          bounds={WIND_BOUNDS}
-        />
-      )}
       {selectedFire && (
         <FireInfo
           selectedFire={selectedFire}
