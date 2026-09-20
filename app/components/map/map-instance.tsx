@@ -41,6 +41,7 @@ export default function InteractiveMap({
   const getLiftedMapRef = useRef(getLiftedMap);
   const latRef = useRef<number | null>(null);
   const lonRef = useRef<number | null>(null);
+
   // map containers
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -141,16 +142,70 @@ export default function InteractiveMap({
     lonRef.current = longitude;
   }, [latitude, longitude]);
 
+  useEffect(() => {
+    if (mapInstance === null || latitude == null || longitude == null) return;
+    const source = mapInstance.getSource<maplibregl.GeoJSONSource>("user_location");
+    if (!source) return;
+
+    source.setData({
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: [longitude, latitude],
+          },
+          properties: {
+            name: "Location",
+            type: "Point",
+          },
+        },
+      ],
+    });
+
+  }, [mapInstance, latitude, longitude]);
+
   // map
   useEffect(() => {
     const loadMap = (map: maplibregl.Map) =>
       new Promise<void>((resolve) =>
         map.on("load", () => {
-          // this section renders the points and lines on the map
-          // modify points and lines appearance here
           map.addSource("geojson", {
             type: "geojson",
             data: measureRef.current.geojson,
+          });
+
+          map.addSource("user_location", {
+            type: "geojson",
+            data: {
+              type: "FeatureCollection",
+              features: [
+                {
+                  type: "Feature",
+                  geometry: {
+                    type: "Point",
+                    coordinates: [lonRef.current ?? 121.05, latRef.current ?? 14.65],
+                  },
+                  properties: {
+                    name: "Location",
+                    type: "Point",
+                  },
+                },
+              ],
+            },
+          });
+
+          map.addLayer({
+            id: "user_location_point",
+            type: "circle",
+            source: "user_location",
+            paint: {
+              "circle-radius": 5,
+              "circle-color": "#1971ff",
+              "circle-stroke-width": 2,
+              "circle-stroke-color": "#619eff",
+            },
           });
 
           map.addLayer({
@@ -164,7 +219,6 @@ export default function InteractiveMap({
             filter: ["in", "$type", "Point"],
           });
 
-          // layer for linestrings
           map.addLayer({
             id: "measure-lines",
             type: "line",
@@ -208,8 +262,6 @@ export default function InteractiveMap({
               e.lngLat,
             );
 
-            // if there is distance, update the total km text
-            // distanceRef is where the text lies
             if (distanceRef.current) {
               distanceRef.current.innerHTML = "";
               if (distanceKm !== null) {
@@ -219,7 +271,6 @@ export default function InteractiveMap({
               }
             }
 
-            // this call updates both measure-points and measure-line since
             // they came from the same source (which is geojson) -> map.addLayer({ source: geojson })
             (map.getSource("geojson") as maplibregl.GeoJSONSource).setData(
               geojson,
@@ -246,7 +297,6 @@ export default function InteractiveMap({
         }),
       );
 
-    // this function loads the basemap itself
     async function initMap() {
       if (!mapContainer.current || mapRef.current) return;
 
@@ -276,43 +326,6 @@ export default function InteractiveMap({
       await loadMap(map); //load the map
 
       getLiftedMapRef.current(map);
-
-      if (geoError === null) {
-        map.addSource("user_location", {
-          type: "geojson",
-          data: {
-            type: "FeatureCollection",
-            features: [
-              {
-                type: "Feature",
-                geometry: {
-                  type: "Point",
-                  coordinates: [
-                    lonRef.current ?? 121.05,
-                    latRef.current ?? 14.65,
-                  ],
-                },
-                properties: {
-                  name: "Location",
-                  type: "Point",
-                },
-              },
-            ],
-          },
-        });
-
-        map.addLayer({
-          id: "user_location_point",
-          type: "circle",
-          source: "user_location",
-          paint: {
-            "circle-radius": 5,
-            "circle-color": "#1971ff",
-            "circle-stroke-width": 2,
-            "circle-stroke-color": "#619eff",
-          },
-        });
-      }
 
       // assign map to an element
       mapRef.current = map;
