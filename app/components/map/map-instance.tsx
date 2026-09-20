@@ -22,14 +22,14 @@ function checkWebGLSupport(): boolean {
     canvas.getContext("webgl") ||
     canvas.getContext("experimental-webgl")
   );
-}
+};
 
 interface InteractiveMapProps {
   getLiftedMap: (map: maplibregl.Map) => void;
   isMeasuring: boolean;
   activeLayers: Set<string>;
   setActiveLayers: Dispatch<SetStateAction<Set<string>>>;
-}
+};
 
 const WIND_BOUNDS: [number, number, number, number] = [-180, -90, 180, 90];
 
@@ -108,6 +108,7 @@ export default function InteractiveMap({
 
   // conditionally display fire overlay
   useEffect(() => {
+    if (!mapInstance) return;
     overlayRef.current?.setProps({
       layers: [
         //fire
@@ -117,11 +118,11 @@ export default function InteractiveMap({
       ].filter(Boolean),
       getCursor: ({ isHovering }) => (isHovering ? "pointer" : "default"),
     });
-  }, [fires, activeLayers, windLayer]);
+  }, [fires, activeLayers, windLayer, mapInstance]);
 
   if (!webglSupported) {
     throw new Error("WebGL is not available in this browser/environment.");
-  }
+  };
 
   useEffect(() => {
     const map = mapRef.current;
@@ -150,6 +151,17 @@ export default function InteractiveMap({
           map.addSource("geojson", {
             type: "geojson",
             data: measureRef.current.geojson,
+          });
+
+          map.addLayer({
+            id: "measure-points",
+            type: "circle",
+            source: "geojson",
+            paint: {
+              "circle-radius": 5,
+              "circle-color": "#ffffff",
+            },
+            filter: ["in", "$type", "Point"],
           });
 
           // layer for linestrings
@@ -185,6 +197,7 @@ export default function InteractiveMap({
 
           map.on("click", (e) => {
             if (!isMeasuringRef.current) return;
+            if (!map.getLayer("measure-points")) return;
 
             const features = map.queryRenderedFeatures(e.point, {
               layers: ["measure-points"],

@@ -22,6 +22,6 @@ export function FiresMap({fires, onChose}: FiresMapProps) {
         radiusMinPixels: 1,
         radiusMaxPixels: 2.5,
         getFillColor: [255,0,0],
-        getLineColor: d => d.isValid ? [255,0,0.5] : [255,0,0,0.5],
+        getLineColor: d => d.isValid ? [255,0,0,0.5] : [255,0,0,0.5],
     });
 }
