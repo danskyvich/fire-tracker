@@ -16,12 +16,6 @@ export default function Layer({ onClose, open, toggleLayers, activeLayers }: Lay
       toggle: activeLayers.has("fire-markers"),
       onCheck: () => toggleLayers("fire-markers"),
     },
-    {
-      id: "containment-boundary",
-      label: "Containment boundary",
-      toggle: activeLayers.has("containment-boundary"),
-      onCheck: () => toggleLayers("containment-boundary"),
-    },
   ];
   const DATA_ITEMS = [
     {
@@ -29,12 +23,6 @@ export default function Layer({ onClose, open, toggleLayers, activeLayers }: Lay
       label: "Air Quality Index (AQI)",
       toggle: activeLayers.has("air-quality"),
       onCheck: () => toggleLayers("air-quality"),
-    },
-    {
-      id: "weather-events",
-      label: "Storm overlay",
-      toggle: activeLayers.has("storm-overlay"),
-      onCheck: () => toggleLayers("storm-overlay"),
     },
     {
       id: "wind-map",
