@@ -1,6 +1,7 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Net.Http.Headers;
 using WildFireTracker.fires;
 
@@ -12,18 +13,16 @@ namespace WildFireTracker.search
         private readonly IHttpClientFactory _httpClient;
         private readonly IConfiguration _configuration;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly ICSVService _csvService;
-        public TimedBackgroundService(ILogger<TimedBackgroundService> logger, IConfiguration configuration, IHttpClientFactory httpClientFactory, IServiceScopeFactory serviceScopeFactory, ICSVService csvService)
+        public TimedBackgroundService(ILogger<TimedBackgroundService> logger, IConfiguration configuration, IHttpClientFactory httpClientFactory, IServiceScopeFactory serviceScopeFactory)
         {
             _logger = logger;
             _configuration = configuration;
             _httpClient = httpClientFactory;
             _serviceScopeFactory = serviceScopeFactory;
-            _csvService = csvService;
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            using var timer = new PeriodicTimer(TimeSpan.FromMinutes(20));
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(15));
             while (await timer.WaitForNextTickAsync(stoppingToken))
             {
                 try
@@ -54,12 +53,12 @@ namespace WildFireTracker.search
             };
 
             using var response = await client.SendAsync(request, cancellationToken);
+            await using var scope = _serviceScopeFactory.CreateAsyncScope();
+            var csvService = scope.ServiceProvider.GetRequiredService<ICSVService>();
             if (!response.IsSuccessStatusCode) 
                 throw new HttpRequestException("Failed fetching data from NASA FIRMS");
             using var csvStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-            var obj = _csvService.ReadCSV<FireDetectionParsing>(csvStream);
-
-            await using var scope = _serviceScopeFactory.CreateAsyncScope();
+            var obj = csvService.ReadCSV<FireDetectionParsing>(csvStream);
 
             var dbContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 
@@ -95,6 +94,8 @@ namespace WildFireTracker.search
             }).ToList();
 
             if (enrichedItem.Count == 0) return;
+            databaseContext.FireDetections.AddRange(enrichedItem);
+            await databaseContext.SaveChangesAsync(cancellationToken);
         }
 
         private List<FireDetectionParsing> parseCsvObject(IEnumerable<FireDetectionParsing> listToParse)

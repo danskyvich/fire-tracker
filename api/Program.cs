@@ -34,7 +34,7 @@ builder.Services.AddCors(options =>
         });
 });
 
-builder.Services.AddDbContext<DatabaseContext>(options => options.UseNpgsql("SupabaseTransactionKey"));
+builder.Services.AddDbContext<DatabaseContext>(options => options.UseNpgsql(builder.Configuration["SupabaseTransactionKey"]));
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
@@ -47,10 +47,12 @@ builder.Services.AddHttpClient("FIRMSClient", client =>
 {
     client.BaseAddress = new Uri("https://firms.modaps.eosdis.nasa.gov/");
 });
+// Winds
 builder.Services.AddHttpClient("WindClient", client =>
 {
     client.BaseAddress = new Uri("http://localhost:7000");
 });
+// AQI
 builder.Services.AddHttpClient("AqiClient", client =>
 {
     client.BaseAddress = new Uri("https://tiles.aqicn.org");
@@ -64,7 +66,7 @@ builder.Services.AddScoped<AqiServices>();
 builder.Services.AddScoped<FireServices>();
 builder.Services.AddScoped<ICacheService, CacheService>();
 builder.Services.AddScoped<WindComputationServices>();
-builder.Services.AddScoped<TimedBackgroundService>();
+builder.Services.AddHostedService<TimedBackgroundService>();
 
 var app = builder.Build();
 
