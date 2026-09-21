@@ -59,10 +59,6 @@ export default function Sidebar({
       activeIndex: 2,
     },
     {
-      icon: <List size={25} className="min-w-3 h-auto cursor-pointer" />,
-      activeIndex: 3,
-    },
-    {
       icon: <Info size={25} className="min-w-3 h-auto cursor-pointer" />,
       activeIndex: 4,
     },
@@ -94,11 +90,6 @@ export default function Sidebar({
         </div>
       )}
       {activeIndex === 3 && (
-        <div className="absolute left-18 top-[58%]">
-          <Legends onClose={() => onIndex(null)} open={activeIndex} />
-        </div>
-      )}
-      {activeIndex === 4 && (
         <WebAppPage onClose={() => onIndex(null)} open={activeIndex} />
       )}
       <div className="pointer-events-auto flex flex-col bg-(--color-background-accent)/75 w-fit h-fit py-10 px-3 gap-8 rounded-lg">

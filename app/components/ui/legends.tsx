@@ -52,9 +52,8 @@ export default function Legends({onClose, open}: {onClose: () => void, open: num
         <p className="font-bold">Legends</p>
         <X size={15} className="min-w-3 h-auto cursor-pointer" onClick={onClose}/>
       </div>
-      {/* Content */}
+      {/*
       <div className="flex flex-col w-full h-full gap-2 my-1">
-        {/* Status */}
         <div className="flex flex-col w-full h-full gap-1">
           <p className="font-extralight text-sm font-sans">Status</p>
           {LEGENDS_CONTENT.map((item, id) => (
@@ -68,7 +67,6 @@ export default function Legends({onClose, open}: {onClose: () => void, open: num
           ))}
         </div>
 
-        {/* Size */}
         <div className="flex flex-col w-full h-full gap-1">
           <p className="font-extralight text-sm font-sans">Size</p>
           {SIZES_CONTENT.map((item, id) => (
@@ -82,6 +80,7 @@ export default function Legends({onClose, open}: {onClose: () => void, open: num
           ))}
         </div>
       </div>
+      */}
     </div>
   );
 }
