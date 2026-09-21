@@ -22,7 +22,7 @@ namespace WildFireTracker.search
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(15));
+            using var timer = new PeriodicTimer(TimeSpan.FromMinutes(20));
             while (await timer.WaitForNextTickAsync(stoppingToken))
             {
                 try

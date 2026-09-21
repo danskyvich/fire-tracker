@@ -3,7 +3,6 @@
 import InteractiveMap from "./components/map/map-instance";
 import Sidebar from "./components/ui/sidebar"
 import WebHeader from "./components/ui/web-header";
-import Zoom from "./components/ui/zoom";
 import { useState } from "react";
 
 export default function Home() {
@@ -62,7 +61,6 @@ export default function Home() {
 
           {/* Lower bar */}
           <div className="absolute left-30 bottom-3">
-            <Zoom map={map} />
           </div>
 
           <div />

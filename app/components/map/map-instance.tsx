@@ -314,14 +314,24 @@ export default function InteractiveMap({
         minPitch: 0,
       });
 
+      // add the overlay
       map.addControl(overlayRef.current);
 
+      // add the zoom ui
+      map.addControl(new maplibregl.NavigationControl(), "bottom-right");
+
+      // add the map scale
       const scale = new maplibregl.ScaleControl({
         maxWidth: 100,
         unit: "metric",
       });
 
       map.addControl(scale, "bottom-left");
+
+      // for mobile users
+      map.boxZoom.enable();
+      map.touchZoomRotate.enable();
+      map.scrollZoom.enable();
 
       await loadMap(map); //load the map
 
