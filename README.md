@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fire Tracker
 
-## Getting Started
+A simple web application that displays all possible fire instances (or hotspots) based on the several parameters. Data is fetched from several sources such as fire data from [NASA FIRMS](https://firms.modaps.eosdis.nasa.gov/active_fire/), wind data from [NOAA GFS](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) using Flowm's [wind server](https://github.com/Flowm/wind-server), and World Air Quality Index from [AQICN.com](https://aqicn.org/here/).
 
-First, run the development server:
+The basemap is rendered using CARTO Basemap ("Dark matter" variant) and Maplibre-gl. Deck.gl was utilized for rendering the fire hotspots overlay, and Redis was used for caching existing data and prevent unnecessary API fetches. The backend utilizes the ASP.NET environment for writing server-side operations such as API requests, caching, and mathematical operations needed for rendering the wind particles.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+<img width="1919" height="904" alt="image" src="https://github.com/user-attachments/assets/e378567b-a16e-4e65-ae7d-716d61d01c1f" />
+<img width="1919" height="906" alt="image" src="https://github.com/user-attachments/assets/d994462f-665a-44e1-a295-526541cbf681" />
+<img width="1919" height="907" alt="image" src="https://github.com/user-attachments/assets/2b328503-216b-402f-82df-d158c7ef09e9" />
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Map interaction: Zoom in and out.
+- Geolocation: Users can see where they are (if they consented) on the map using native `navigator.geolocation` API.
+- Responsiveness on smaller screens (for mobile devices, etc.)
+- View current fire hotspots around the globe, and view data on each of them. The data includes:
+  - `confidence` → low/nominal/high.
+  - `daynight` → whether the hotspot was detected either on day or night.
+  - `satellite` → data source (Suomi NPP).
+  - `acquired-date` → date of data acquisition.
+  - `acquired-time` → time of data acquisition.
+  - `longitude` and `latitude` → exact position of the hotspot relative to the geographic coordinate system.
 
-## Learn More
+## Authors
 
-To learn more about Next.js, take a look at the following resources:
+- [@danskyvich](https://github.com/danskyvich)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Optimizations
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+In order to reduce the strain of rendering layers at once, Fire Tracker utilizes Redis' caching layer to prevent wasteful data fetching. All loaded data coming from API requests are stored inside Redis' in-memory storage, making fast data retrieval possible. 
 
-## Deploy on Vercel
+## Tech Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Client:** React, TailwindCSS, Next.JS, Maplibre-gl & Maplibre-gl-wind, Deck.gl, JavaScript & Typescript, 
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Server:** ASP.NET Core API, C#, Docker, Redis
+
+**Tools**: Visual Studio Code, Postman API
