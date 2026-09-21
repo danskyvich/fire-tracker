@@ -40,10 +40,12 @@ export default function Home() {
         <div className="absolute pointer-events-none grid grid-[15%_1fr_15%] sm:grid-cols-[12.5%_1fr_12.5%] md:grid-cols-[10%_1fr_10%] grid-rows-[5%_1fr_5%] auto-cols-auto w-full h-full p-3">
           {/* Row-1*/}
           <div className="flex z-50 flex-row col-span-3 row-span-1 row-start-1 items-center gap-5 justify-center">
+            {/*
             <div className="pointer-events-auto flex h-full gap-2 py-1 items-center justify-end">
               <SearchIcon size={20} className="min-w-3 h-auto cursor-pointer" />
               <SearchField />
             </div>
+            */}
             <WebHeader />
           </div>
 

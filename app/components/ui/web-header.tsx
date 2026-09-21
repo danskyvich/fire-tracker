@@ -1,12 +1,14 @@
 import { useCurrentTime } from "../../hooks/useCurrentTime";
+import Image from "next/image";
 
 export default function WebHeader() {
 
     const value = useCurrentTime();
 
     return (
-      <div className="flex w-fit h-fit bg-(--color-background-accent)/50 border-(--color-primary) border-2 px-5 py-1 rounded-lg items-center justify-center gap-3">
-        <p className="hidden lg:flex flex-row font-sans text-md text-(--color-primary) font-semibold">
+      <div className="flex w-fit h-fit bg-(--color-background-accent)/80 border-(--color-primary) border-2 px-5 py-1 rounded-lg items-center justify-center gap-3">
+        <Image src="/icon.png" alt="web-logo" width={20} height={20} />
+        <p className="flex-row font-sans text-md text-(--color-primary) font-semibold">
           WildfireTracker
         </p>
 
