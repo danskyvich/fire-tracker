@@ -50,10 +50,10 @@ export default function FireInfo({selectedFire, onClose, open}: FireInfoProps) {
 
     if (!open) return null;
     return (
-      <div className="flex flex-col w-69 md:w-70 lg:w-80 xl:w-90 h-fit absolute z-50 pointer-events-auto rounded-lg bg-background/75 p-3 bottom-11 left-4 border border-white/25 gap-2">
+      <div className="flex flex-col w-69 md:w-70 lg:w-80 xl:w-90 h-fit absolute z-50 pointer-events-auto rounded-lg bg-background/90 p-3 bottom-11 left-4 border border-white/25 gap-2">
         {/* Controller */}
         <div
-          className="flex w-full h-fit border border-white/23 items-center justify-center py-1 hover:bg-white/15 cursor-pointer transition-all duration-100"
+          className="flex w-full h-fit border border-white/23 items-center justify-center py-1 hover:bg-white/15 cursor-pointer transition-all duration-100 rounded-lg"
           onClick={() => setIsMinimized((prev) => !prev)}
         >
           {isMinimized ? (

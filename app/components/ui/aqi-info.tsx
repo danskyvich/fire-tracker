@@ -41,7 +41,7 @@ export default function AqiInfo() {
   return (
     <div className="flex flex-col w-40 md:w-65 h-fit absolute z-50 pointer-events-auto rounded-lg bg-background/75 p-3 bottom-12 right-11 border border-white/25 gap-2">
       <div
-        className="flex border border-white/50 rounded-lg py-1 items-center justify-center cursor-pointer bg-transparent hover:bg-white/10 active:bg-white/25 duration-100 transition-all"
+        className="flex border border-white/25 rounded-lg py-1 items-center justify-center cursor-pointer bg-transparent hover:bg-white/10 active:bg-white/25 duration-100 transition-all"
         onClick={() => setMinimized((prev) => !prev)}
       >
         {minimized ? (
