@@ -4,6 +4,8 @@ using WildFireTracker.aqi;
 using WildFireTracker.cache;
 using StackExchange.Redis;
 using Microsoft.Extensions.DependencyInjection;
+using WildFireTracker.search;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +33,8 @@ builder.Services.AddCors(options =>
             );
         });
 });
+
+builder.Services.AddDbContext<DatabaseContext>(options => options.UseNpgsql("SupabaseTransactionKey"));
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
@@ -60,6 +64,7 @@ builder.Services.AddScoped<AqiServices>();
 builder.Services.AddScoped<FireServices>();
 builder.Services.AddScoped<ICacheService, CacheService>();
 builder.Services.AddScoped<WindComputationServices>();
+builder.Services.AddScoped<TimedBackgroundService>();
 
 var app = builder.Build();
 
