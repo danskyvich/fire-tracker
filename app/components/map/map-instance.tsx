@@ -373,7 +373,7 @@ export default function InteractiveMap({
           open
         />
       )}
-      {activeLayers.has("air-quality") && <AqiInfo />}
+      {activeLayers.has("air-quality") && <AqiInfo/>}
     </div>
   );
 }

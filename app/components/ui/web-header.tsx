@@ -7,8 +7,8 @@ export default function WebHeader() {
 
     return (
       <div className="flex w-fit h-fit bg-(--color-background-accent)/80 border-(--color-primary) border-2 px-5 py-1 rounded-lg items-center justify-center gap-3">
-        <Image src="/icon.png" alt="web-logo" width={20} height={20} />
-        <p className="flex-row font-sans text-md text-(--color-primary) font-semibold">
+        <Image src="/icon.png" alt="web-logo" width={20} height={20} className="hidden lg:flex"/>
+        <p className="hidden sm:flex flex-row font-sans text-md text-(--color-primary) font-semibold">
           WildfireTracker
         </p>
 

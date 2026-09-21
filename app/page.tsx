@@ -2,8 +2,6 @@
 
 import InteractiveMap from "./components/map/map-instance";
 import Sidebar from "./components/ui/sidebar"
-import SearchField from "./components/ui/search-field";
-import { SearchIcon } from "lucide-react";
 import WebHeader from "./components/ui/web-header";
 import Zoom from "./components/ui/zoom";
 import { useState } from "react";

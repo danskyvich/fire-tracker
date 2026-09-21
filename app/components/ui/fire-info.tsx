@@ -76,9 +76,9 @@ export default function FireInfo({selectedFire, onClose, open}: FireInfoProps) {
           >
             <div className="flex flex-col w-full">
               <div className="flex w-full justify-between">
-                <div className="flex w-full gap-2">
+                <div className="flex w-full gap-2 items-center">
                   <Flame size={18} className="min-w-3 h-auto" />
-                  <p className="text-lg font-semibold font-sans">
+                  <p className="text-[0.8rem] md:text-lg font-semibold font-sans">
                     Satellite hotspot
                   </p>
                 </div>
@@ -88,19 +88,19 @@ export default function FireInfo({selectedFire, onClose, open}: FireInfoProps) {
                   onClick={onClose}
                 />
               </div>
-              <p className="text-sm font-light font-sans">
+              <p className="text-[0.75rem] md:text-sm font-light font-sans">
                 {selectedFire?.longitude}, {selectedFire?.latitude}
               </p>
             </div>
           </div>
 
           {!isMinimized && (
-            <div className="flex flex-col w-full h-full gap-1">
+            <div className="flex flex-col w-full h-full md:gap-1">
               {/* Tags */}
-              <div className="flex w-full gap-2 py-1">
+              <div className="flex w-full gap-2">
                 {/* Confidence */}
                 <div
-                  className={`flex items-center justify-center ${CONFIDENCE.find((e) => e.id === String(selectedFire?.confidence))?.color} px-3 py-1 text-sm font-sans text-background rounded-lg `}
+                  className={`flex items-center justify-center ${CONFIDENCE.find((e) => e.id === String(selectedFire?.confidence))?.color} px-3 py-0 md:py-1 text-[0.75rem] md:text-sm font-sans text-background rounded-lg `}
                 >
                   {
                     CONFIDENCE.find(
@@ -111,19 +111,19 @@ export default function FireInfo({selectedFire, onClose, open}: FireInfoProps) {
 
                 {/* DayNight */}
                 <div
-                  className={`flex items-center justify-center ${DAYNIGHT.find((e) => e.id === selectedFire?.daynight)?.color} px-3 py-1 text-sm font-sans rounded-lg`}
+                  className={`flex items-center justify-center ${DAYNIGHT.find((e) => e.id === selectedFire?.daynight)?.color} px-3 py-0 md:py-1 text-[0.75rem] md:text-sm font-sans rounded-lg`}
                 >
                   {DAYNIGHT.find((e) => e.id === selectedFire?.daynight)?.value}
                 </div>
               </div>
 
               {/* Duration */}
-              <p className="text-extralight text-xl font-semibold text-(--color-accent)">
+              <p className="text-extralight text-xl font-semibold text-(--color-accent) text-[0.8rem] md:text-lg">
                 {duration} <span className="text-base font-light">ago</span>
               </p>
 
               {/* Since */}
-              <p className="font-extralight font-sans text-sm">
+              <p className="font-extralight font-sans text-[0.6rem] md:text-sm">
                 <span className="text-white/75 text-sm italic">since</span>{" "}
                 {formatDate(selectedFire?.acq_date)},{" "}
                 {formatTime(selectedFire?.acq_time)}
@@ -132,7 +132,7 @@ export default function FireInfo({selectedFire, onClose, open}: FireInfoProps) {
               {/* Satellite */}
               <div className="flex w-full gap-2">
                 <Satellite size={18} className="min-w-3 h-auto" />
-                <p className="text-sm font-sans">
+                <p className="text-[0.75rem] md:text-sm font-sans">
                   {String(selectedFire?.satellite) === "N" &&
                     "Suomi NPP Satellite"}
                 </p>
