@@ -16,16 +16,31 @@ namespace WildFireTracker.fires
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get([FromQuery] string bbox)
         {
+            if (string.IsNullOrWhiteSpace(bbox))
+                return BadRequest("bbox is required");
+
             try
             {
+                var parts = bbox.Split(',').Select(double.Parse).ToArray();
+                var lonSpan = parts[2] - parts[0];
+                var isWorldView = lonSpan > 180;
+
                 var fires = await _fireServices.GetFiresAsync();
                 return Ok(fires);
             }
             catch (HttpRequestException ex)
             {
                 return StatusCode(502, ex.Message);
+            }
+            catch (FormatException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exceptionn ex)
+            {
+                return StatusCode(500, ex.message);
             }
         }
     }
