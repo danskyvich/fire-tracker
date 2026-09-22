@@ -50,7 +50,7 @@ builder.Services.AddHttpClient("FIRMSClient", client =>
 // Winds
 builder.Services.AddHttpClient("WindClient", client =>
 {
-    client.BaseAddress = new Uri("http://localhost:7000");
+    client.BaseAddress = new Uri("https://wind-server-8w9f.onrender.com");
 });
 // AQI
 builder.Services.AddHttpClient("AqiClient", client =>
