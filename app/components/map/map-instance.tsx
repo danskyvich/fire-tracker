@@ -77,10 +77,29 @@ export default function InteractiveMap({
 
   // set fires
   useEffect(() => {
-    getFires()
-      .then(setFires)
-      .catch((err) => setError(String(err)));
-  }, []);
+    if (!mapInstance) return;
+
+    const fetchFires = () => {
+      const bounds = mapInstance.getBounds();
+      const bbox = [
+        bounds.getWest(),
+        bounds.getSouth(),
+        bounds.getEast(),
+        bounds.getNorth(),
+      ].join(",");
+
+      getFires(bbox)
+        .then(setFires)
+        .catch((err) => setError(String(err)));
+    }
+
+    fetchFires();
+    mapInstance.on("moveend", fetchFires);
+
+    return () => {
+      mapInstance.off("moveend", fetchFires);
+    }
+  }, [mapInstance]);
 
   useEffect(() => {
     const fetchWind = async () => {
@@ -111,6 +130,7 @@ export default function InteractiveMap({
   // conditionally display fire overlay
   useEffect(() => {
     if (!mapInstance) return;
+
     overlayRef.current?.setProps({
       layers: [
         //fire
