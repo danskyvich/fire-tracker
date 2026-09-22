@@ -81,7 +81,7 @@ export default function useWindParticleLayer({
           speedFactor,
           colorRamp: COLOR_RAMP,
           width: 4.5,
-        }) as WindParticleLayer,
+        }) as unknown as WindParticleLayer,
       );
     };
 
