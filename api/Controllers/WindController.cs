@@ -30,9 +30,8 @@ namespace WildFireTracker.wind
                 return File(bytes, "image/png");
             } catch (HttpRequestException ex)
             {
-                return HttpStatusCode(503, "Wind data service unavailable");
+                return StatusCode(500, ex.Message);
             }
-            
         }
     }
 }
