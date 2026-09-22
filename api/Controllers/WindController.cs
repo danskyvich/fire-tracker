@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WildFireTracker.wind
@@ -15,16 +16,23 @@ namespace WildFireTracker.wind
         [HttpGet("texture")]
         public async Task<IActionResult> GetWind()
         {
-            var (bytes, uMin, uMax, vMin, vMax, lo1, lo2, la1, la2) = await _windService.GetWindTextureAsync();
-            Response.Headers["X-Wind-UMin"] = uMin.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            Response.Headers["X-Wind-UMax"] = uMax.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            Response.Headers["X-Wind-VMin"] = vMin.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            Response.Headers["X-Wind-VMax"] = vMax.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            Response.Headers["X-Wind-Lo1"] = lo1.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            Response.Headers["X-Wind-Lo2"] = lo2.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            Response.Headers["X-Wind-La1"] = la1.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            Response.Headers["X-Wind-La2"] = la2.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            return File(bytes, "image/png");
+            try
+            {
+                var (bytes, uMin, uMax, vMin, vMax, lo1, lo2, la1, la2) = await _windService.GetWindTextureAsync();
+                Response.Headers["X-Wind-UMin"] = uMin.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                Response.Headers["X-Wind-UMax"] = uMax.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                Response.Headers["X-Wind-VMin"] = vMin.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                Response.Headers["X-Wind-VMax"] = vMax.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                Response.Headers["X-Wind-Lo1"] = lo1.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                Response.Headers["X-Wind-Lo2"] = lo2.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                Response.Headers["X-Wind-La1"] = la1.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                Response.Headers["X-Wind-La2"] = la2.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                return File(bytes, "image/png");
+            } catch (HttpRequestException ex)
+            {
+                return HttpStatusCode(503, "Wind data service unavailable");
+            }
+            
         }
     }
 }
