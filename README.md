@@ -1,6 +1,6 @@
 # Fire Tracker
 
-A simple web application that displays all possible fire instances (or hotspots) based on the several parameters. Data is fetched from several sources such as fire data from [NASA FIRMS](https://firms.modaps.eosdis.nasa.gov/active_fire/), wind data from [NOAA GFS](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) using Flowm's [wind server](https://github.com/Flowm/wind-server), and World Air Quality Index from [AQICN.com](https://aqicn.org/here/).
+A simple web application that displays all possible fire instances (or hotspots) based on several parameters. Data is fetched from several sources such as fire data from [NASA FIRMS](https://firms.modaps.eosdis.nasa.gov/active_fire/), wind data from [NOAA GFS](https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast) using Flowm's [wind server](https://github.com/Flowm/wind-server), and World Air Quality Index from [AQICN.com](https://aqicn.org/here/).
 
 The basemap is rendered using CARTO Basemap ("Dark matter" variant) and Maplibre-gl. Deck.gl was utilized for rendering the fire hotspots overlay, and Redis was used for caching existing data and prevent unnecessary API fetches. The backend utilizes the ASP.NET environment for writing server-side operations such as API requests, caching, and mathematical operations needed for rendering the wind particles.
 
