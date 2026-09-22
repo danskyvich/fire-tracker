@@ -24,7 +24,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: MyAllowSpecificOrigins, 
         policy =>
         {
-            policy.WithOrigins("https://fire-tracker-dpjrs.vercel.app/")
+            policy.WithOrigins("https://fire-tracker-dpjrs.vercel.app")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .WithExposedHeaders(
