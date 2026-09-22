@@ -24,7 +24,7 @@ namespace WildFireTracker.fires
         public async Task<IEnumerable<FireDetection>> GetFiresAsync(string bbox, bool downsample)
         {
 
-            const string cacheKey = $"fire:VIIRS_SNPP_NRT:{bbox}:{(downsample ? "ds" : "full")}:1";
+            var cacheKey = $"fire:VIIRS_SNPP_NRT:{bbox}:{(downsample ? "ds" : "full")}:1";
 
             var cacheContent = await _cacheService.GetCacheData<IEnumerable<FireDetection>>(cacheKey);
             if (cacheContent == null)

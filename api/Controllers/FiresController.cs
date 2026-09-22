@@ -27,7 +27,7 @@ namespace WildFireTracker.fires
                 var lonSpan = parts[2] - parts[0];
                 var isWorldView = lonSpan > 180;
 
-                var fires = await _fireServices.GetFiresAsync();
+                var fires = await _fireServices.GetFiresAsync(bbox, downsample: isWorldView);
                 return Ok(fires);
             }
             catch (HttpRequestException ex)
@@ -38,9 +38,9 @@ namespace WildFireTracker.fires
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exceptionn ex)
+            catch (Exception ex)
             {
-                return StatusCode(500, ex.message);
+                return StatusCode(500, ex.Message);
             }
         }
     }
