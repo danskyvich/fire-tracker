@@ -1,6 +1,6 @@
 import { FireDetection } from "../types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_SITE ?? "http://localhost:5180";
+const API_BASE = process.env.API_SITE ?? "https://fire-tracker-yh7z.onrender.com";
 
 // call all data from the api endpoint
 export async function getFires(): Promise<FireDetection[]> {
