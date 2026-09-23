@@ -70,7 +70,8 @@ export default function InteractiveMap({
   });
 
   // for air quality
-  const API_BASE = process.env.NEXT_PUBLIC_API_SITE ?? "http://localhost:5180";
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_SITE;
 
   const { latitude, longitude, error: geoError } = useGeolocation();
 
