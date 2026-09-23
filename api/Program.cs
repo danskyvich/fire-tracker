@@ -16,15 +16,14 @@ builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 builder.Services.AddControllers();
 
-var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
 
 // add CORS policy
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: MyAllowSpecificOrigins, 
-        policy =>
+    options.AddDefaultPolicy(policy => 
         {
-            policy.WithOrigins("http://localhost:3000")
+            policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .WithExposedHeaders(
@@ -50,7 +49,7 @@ builder.Services.AddHttpClient("FIRMSClient", client =>
 // Winds
 builder.Services.AddHttpClient("WindClient", client =>
 {
-    client.BaseAddress = new Uri("http://localhost:7000");
+    client.BaseAddress = new Uri(builder.Configuration["BackendWind"]!);
 });
 // AQI
 builder.Services.AddHttpClient("AqiClient", client =>
@@ -78,7 +77,7 @@ if (app.Environment.IsDevelopment())
 
 //app.UseHttpsRedirection();
 
-app.UseCors(MyAllowSpecificOrigins);
+app.UseCors();
 
 app.MapControllers();
 
