@@ -13,6 +13,7 @@ import FireInfo from "../ui/fire-info";
 import useGeolocation from "@/app/hooks/useGeolocation";
 import AqiInfo from "../ui/aqi-info";
 import useWindParticleLayer from "@/app/hooks/useWindParticleLayer";
+import ErrorModal from "../ui/error-modal";
 
 function checkWebGLSupport(): boolean {
   if (typeof window === "undefined") return true;
@@ -392,6 +393,9 @@ export default function InteractiveMap({
 
   return (
     <div className="relative w-dvw h-dvh">
+      {
+        error && <ErrorModal message={error}/>
+      }
       <div ref={mapContainer} id="map-canvas" className="w-full h-full" />
       <div
         ref={distanceRef}
