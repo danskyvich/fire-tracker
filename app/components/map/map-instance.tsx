@@ -71,7 +71,7 @@ export default function InteractiveMap({
 
   // for air quality
   const API_BASE =
-    process.env.API_SITE ?? "https://fire-tracker-yh7z.onrender.com";
+    process.env.NEXT_PUBLIC_API_SITE;
 
   const { latitude, longitude, error: geoError } = useGeolocation();
 
