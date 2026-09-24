@@ -13,6 +13,7 @@ import FireInfo from "../ui/fire-info";
 import useGeolocation from "@/app/hooks/useGeolocation";
 import AqiInfo from "../ui/aqi-info";
 import useWindParticleLayer from "@/app/hooks/useWindParticleLayer";
+import ErrorModal from "../ui/error-modal";
 
 function checkWebGLSupport(): boolean {
   if (typeof window === "undefined") return true;
@@ -71,7 +72,7 @@ export default function InteractiveMap({
 
   // for air quality
   const API_BASE =
-    process.env.API_SITE ?? "https://fire-tracker-yh7z.onrender.com";
+    process.env.NEXT_PUBLIC_API_SITE;
 
   const { latitude, longitude, error: geoError } = useGeolocation();
 
@@ -252,7 +253,7 @@ export default function InteractiveMap({
           // for air-quality
           map.addSource("air-quality", {
             type: "raster",
-            tiles: [`${API_BASE}/api/Aqi/tiles/{z}/{x}/{y}`],
+            tiles: [`${API_BASE}/api/aqi/tiles/{z}/{x}/{y}`],
             tileSize: 256,
             attribution:
               'Air Quality data © <a href="https://aqicn.org" target="_blank">WAQI</a>',
@@ -392,6 +393,9 @@ export default function InteractiveMap({
 
   return (
     <div className="relative w-dvw h-dvh">
+      {
+        error && <ErrorModal message={error}/>
+      }
       <div ref={mapContainer} id="map-canvas" className="w-full h-full" />
       <div
         ref={distanceRef}

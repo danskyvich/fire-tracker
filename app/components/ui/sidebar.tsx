@@ -23,8 +23,6 @@ export default function Sidebar({
   toggleLayers,
 }: SidebarProps) {
   const [error, setError] = useState<string | null>(null);
-  const [lat, setLat] = useState<number | null>(0);
-  const [lon, setLon] = useState<number | null>(0);
   
   // Geolocation API
   const { latitude, longitude, error: geoError } = useGeolocation();
@@ -32,11 +30,6 @@ export default function Sidebar({
     const retrievePosition = async () => {
       if (!latitude || !longitude) return;
       if (geoError === null) {
-        setLat(latitude);
-        setLon(longitude);
-        return;
-      } else {
-        setError(geoError);
         return;
       }
     };
@@ -64,15 +57,18 @@ export default function Sidebar({
     },
   ];
 
-  // navigate to the user's location
-  if (activeIndex === 0) {
-    if (!lat || !lon) return;
+  const handleLocationClick = () => {
+    onIndex(0);
+    if (latitude === null || longitude === null) {
+      setError(geoError ?? "Geolocation not working.");
+      return;
+    }
     map?.flyTo({
-      center: [lon, lat],
+      center: [longitude, latitude],
       zoom: 15,
       essential: true,
     });
-  }
+  };
 
   if (!map) return;
   
@@ -97,7 +93,7 @@ export default function Sidebar({
           <div
             className={`${activeIndex === id && "text-(--color-accent)"} flex w-full h-fit hover:bg-(--color-background-accent)/50 hover:text-(--color-accent)/50 transition-all duration-100`}
             key={id}
-            onClick={() => onIndex(id)}
+            onClick={() => { id === 0 ? handleLocationClick() : onIndex(id)}}
           >
             {item.icon}
           </div>

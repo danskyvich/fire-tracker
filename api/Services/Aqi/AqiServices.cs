@@ -34,7 +34,7 @@ namespace WildFireTracker.aqi
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
                 throw new HttpRequestException(
-                    $"Failed to fetch files from AQICN.org. Sttaus: {response.StatusCode}, Body: {errorBody}"
+                    $"Failed to fetch files from AQICN.org. Status: {response.StatusCode}, Body: {errorBody}"
                 );
             }
             return await response.Content.ReadAsByteArrayAsync();
