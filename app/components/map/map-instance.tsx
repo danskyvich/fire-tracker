@@ -253,7 +253,7 @@ export default function InteractiveMap({
           // for air-quality
           map.addSource("air-quality", {
             type: "raster",
-            tiles: [`${API_BASE}/api/Aqi/tiles/{z}/{x}/{y}`],
+            tiles: [`${API_BASE}/api/aqi/tiles/{z}/{x}/{y}`],
             tileSize: 256,
             attribution:
               'Air Quality data © <a href="https://aqicn.org" target="_blank">WAQI</a>',

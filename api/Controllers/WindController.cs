@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace WildFireTracker.wind
 {
     [ApiController]
-    [Route("api/[controller]")] // api/wind
+    [Route("api/[controller]")]
     public class WindController : ControllerBase
     {
         private readonly WindServices _windService;
