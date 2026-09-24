@@ -22,16 +22,21 @@ export const useGeolocation = () => {
     useEffect(() => {
         if (!isGeolocationSupported) return;
         navigator.geolocation.getCurrentPosition(
-            (position) => {
-                    const { latitude, longitude } = position.coords;
-                    lonRef.current = longitude;
-                    latRef.current = latitude;
-                    setState({latitude, longitude, error: null});
-            },
-             (error) => {
-                setState(x => ({ ...x, error: `${error.code}: ${error.message}`}));
-            },
-        );
+                (position) => {
+                    console.log("success");
+                        const { latitude, longitude } = position.coords;
+                        lonRef.current = longitude;
+                        latRef.current = latitude;
+                        setState({latitude, longitude, error: null});
+                },
+                (error) => {
+                    console.log("failed");
+                    setState(x => ({ ...x, error: `${error.code}: ${error.message}`}));
+                },
+                {
+                    enableHighAccuracy: true, timeout: 10000, maximumAge: 0
+                }
+            );
     }, []);
 
     return { ...state, latRef, lonRef };
