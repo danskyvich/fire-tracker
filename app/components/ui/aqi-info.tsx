@@ -51,7 +51,7 @@ export default function AqiInfo() {
         )}
       </div>
       <div className="flex gap-2 justify-between items-center">
-        <div className="flex w-fit">
+        <div className="flex w-fit gap-2">
           <Wind className="min-w-4 h-auto" size={15}/> 
           <p className="font-sans text-[0.85rem] font-semibold">
             Air Quality Index
