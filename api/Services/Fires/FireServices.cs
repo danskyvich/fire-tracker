@@ -23,8 +23,7 @@ namespace WildFireTracker.fires
 
         public async Task<IEnumerable<FireDetection>> GetFiresAsync(string bbox, bool downsample)
         {
-
-            var cacheKey = $"fire:VIIRS_SNPP_NRT:{bbox}:{(downsample ? "ds" : "full")}:1";
+            var cacheKey = $"fire:VIIRS_ALL:{bbox}:{(downsample ? "ds" : "full")}:2";
 
             var cacheContent = await _cacheService.GetCacheData<IEnumerable<FireDetection>>(cacheKey);
             if (cacheContent == null)
@@ -32,26 +31,41 @@ namespace WildFireTracker.fires
                 // create a http request
                 var httpClient = _httpClientFactory.CreateClient("FIRMSClient");
                 var apiKey = _configuration["NasaFirmsApiKey"];
-                var request = new HttpRequestMessage(HttpMethod.Get, $"api/area/csv/{apiKey}/VIIRS_SNPP_NRT/{bbox}/1")
+                
+                var sources = new[] {$"VIIRS_SNPP_NRT", "VIIRS_NOAA20_NRT", "VIIRS_NOAA21_NRT"};
+                var allFires = new List<FireDetection>();
+
+                try
                 {
-                    Headers =
+                    foreach (string source in sources)
+                    {
+                        var request = new HttpRequestMessage(HttpMethod.Get, $"api/area/csv/{apiKey}/{source}/{bbox}/2")
+                        {
+                            Headers =
+                        {
+                            {HeaderNames.Accept, "text/csv"},
+                            {HeaderNames.UserAgent, "FirmsRequest"},
+                        }
+                        };
+
+                        var response = await httpClient.SendAsync(request);
+                        if (!response.IsSuccessStatusCode)
+                            throw new HttpRequestException("Failed to fetch data from FIRMS");
+
+                        var csvStream = await response.Content.ReadAsStreamAsync();
+                        allFires.AddRange(_csvService.ReadCSV<FireDetection>(csvStream));
+                    }
+                } catch (Exception ex)
                 {
-                    { HeaderNames.Accept, "text/csv" },
-                    { HeaderNames.UserAgent, "FirmsRequest" }
+                    throw new Exception($"Error encountered: {ex.Message}, {ex.GetBaseException().Message}");
                 }
-                };
-                var response = await httpClient.SendAsync(request);
 
-                if (!response.IsSuccessStatusCode)
-                    throw new HttpRequestException($"Failed to fetch FIRMS data: {response.StatusCode}");
-                var csvStream = await response.Content.ReadAsStreamAsync();
-                var obj = _csvService.ReadCSV<FireDetection>(csvStream);
-                var filteredObj = obj.Where(o => FireFilters.IsValidFire(o.bright_ti4, o.deltaT45, o.daynight)).ToList();
+                var filteredObj = allFires.Where(item => FireFilters.IsValidFire(item.bright_ti4, item.deltaT45, item.daynight));
+                var filteredObjResult = downsample ? DownsampleByGrid(filteredObj, cellSizeDegrees: 2.0) : filteredObj.ToList();
 
-                var result = downsample ? DownsampleByGrid(filteredObj, cellSizeDegrees: 2.0) : filteredObj.ToList();
-                // add to cache
-                await _cacheService.SetCacheData(cacheKey, filteredObj, TimeSpan.FromMinutes(15));
-                return filteredObj;
+                //set cache
+                await SetCacheData(cacheKey, filteredObjResult, 15);
+                return filteredObjResult;
             } 
             return cacheContent;
         }
@@ -64,6 +78,11 @@ namespace WildFireTracker.fires
                 ))
                 .Select(g => g.OrderByDescending(f => f.bright_ti4).First()) // strongest fire per cell
                 .ToList();
+        }
+
+        private async Task SetCacheData(string key, IEnumerable<FireDetection> data, int time)
+        {
+            await _cacheService.SetCacheData(key, data, TimeSpan.FromMinutes(time));
         }
     }
 }

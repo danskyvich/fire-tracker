@@ -132,9 +132,11 @@ export default function FireInfo({selectedFire, onClose, open}: FireInfoProps) {
               {/* Satellite */}
               <div className="flex w-full gap-2">
                 <Satellite size={18} className="min-w-3 h-auto" />
-                <p className="text-[0.75rem] md:text-sm font-sans">
-                  {String(selectedFire?.satellite) === "N" &&
-                    "Suomi NPP Satellite"}
+                <p className="text-[0.70rem] md:text-[0.8rem] lg:text-sm font-sans">
+                  {
+                    String(selectedFire?.satellite) === "N" ? "Suomi NPP" : String(selectedFire?.satellite) === "N20" ? "NOAA-20 (formerly JPSS-1)" : String(selectedFire?.satellite) === "N21" ? "NOAA-21 (formerly JPSS-2" : null
+                  }
+                  {" "}({String(selectedFire?.version)})
                 </p>
               </div>
             </div>

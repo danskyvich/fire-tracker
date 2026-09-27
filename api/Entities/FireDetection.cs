@@ -15,5 +15,6 @@ namespace WildFireTracker.fires
         public required string satellite { get; set; }
         public double frp { get; set; }
         public required string daynight { get; set; } // D or N 
+        public required string version { get; set; }
     }      
 }
