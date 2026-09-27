@@ -5,14 +5,13 @@ import * as maplibregl from "maplibre-gl";
 import { BASEMAP } from "@deck.gl/carto";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { clearMeasureState, createMeasureState, toggleMeasurePoint } from "../../lib/location/measure/distance";
-import { FireDetection, WindTexture } from "@/app/lib/api/types";
+import { FireDetection } from "@/app/lib/api/types";
 import {FiresMap} from "../../lib/api/fires/fires-layer";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import { getFires } from "@/app/lib/api/fires/fires";
 import FireInfo from "../ui/fire-info";
 import useGeolocation from "@/app/hooks/useGeolocation";
 import AqiInfo from "../ui/aqi-info";
-import useWindParticleLayer from "@/app/hooks/useWindParticleLayer";
 import ErrorModal from "../ui/error-modal";
 
 function checkWebGLSupport(): boolean {
@@ -31,8 +30,6 @@ interface InteractiveMapProps {
   activeLayers: Set<string>;
   setActiveLayers: Dispatch<SetStateAction<Set<string>>>;
 };
-
-const WIND_BOUNDS: [number, number, number, number] = [-180, -90, 180, 90];
 
 export default function InteractiveMap({
   getLiftedMap,
@@ -61,14 +58,6 @@ export default function InteractiveMap({
   // for fires
   const [fires, setFires] = useState<FireDetection[]>([]);
   const [selectedFire, setSelectedFire] = useState<FireDetection | null>(null);
-
-  // for wind
-  const [wind, setWind] = useState<WindTexture | null>(null);
-  const windLayer = useWindParticleLayer({
-    map: mapInstance,
-    wind: activeLayers.has("wind-map") ? wind : null,
-    bounds: WIND_BOUNDS,
-  });
 
   // for air quality
   const API_BASE =
@@ -102,32 +91,6 @@ export default function InteractiveMap({
     }
   }, [mapInstance]);
 
-  useEffect(() => {
-    const fetchWind = async () => {
-      try {
-        const response = await fetch(`${API_BASE}/api/wind/texture`);
-        if (!response.ok)
-          throw new Error(`Failed fetching wind data: ${response.status}`);
-
-        const uMin = parseFloat(response.headers.get("X-Wind-UMin")!);
-        const uMax = parseFloat(response.headers.get("X-Wind-UMax")!);
-        const vMin = parseFloat(response.headers.get("X-Wind-VMin")!);
-        const vMax = parseFloat(response.headers.get("X-Wind-VMax")!);
-        const lo1 = parseFloat(response.headers.get("X-Wind-Lo1")!);
-        const lo2 = parseFloat(response.headers.get("X-Wind-Lo2")!);
-        const la1 = parseFloat(response.headers.get("X-Wind-La1")!);
-        const la2 = parseFloat(response.headers.get("X-Wind-La2")!);
-        const bitmap = await createImageBitmap(await response.blob());
-        console.log({ uMin, uMax, vMin, vMax, lo1, lo2, la1, la2 });
-
-        setWind({ bitmap, uMin, uMax, vMin, vMax, lo1, lo2, la1, la2});
-      } catch (err) {
-        setError(String(err));
-      }
-    };
-    fetchWind();
-  }, [API_BASE]);
-
   // conditionally display fire overlay
   useEffect(() => {
     if (!mapInstance) return;
@@ -136,12 +99,11 @@ export default function InteractiveMap({
       layers: [
         //fire
         activeLayers.has("fire-markers") &&
-          FiresMap({ fires, onChose: setSelectedFire }),
-        windLayer,
+          FiresMap({ fires, onChose: setSelectedFire })
       ].filter(Boolean),
       getCursor: ({ isHovering }) => (isHovering ? "pointer" : "default"),
     });
-  }, [fires, activeLayers, windLayer, mapInstance]);
+  }, [fires, activeLayers, mapInstance]);
 
   if (!webglSupported) {
     throw new Error("WebGL is not available in this browser/environment.");

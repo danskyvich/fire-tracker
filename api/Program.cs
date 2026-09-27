@@ -1,5 +1,4 @@
 using WildFireTracker.fires;
-using WildFireTracker.wind;
 using WildFireTracker.aqi;
 using WildFireTracker.cache;
 using StackExchange.Redis;
@@ -46,11 +45,6 @@ builder.Services.AddHttpClient("FIRMSClient", client =>
 {
     client.BaseAddress = new Uri("https://firms.modaps.eosdis.nasa.gov/");
 });
-// Winds
-builder.Services.AddHttpClient("WindClient", client =>
-{
-    client.BaseAddress = new Uri(builder.Configuration["BackendWind"]!);
-});
 // AQI
 builder.Services.AddHttpClient("AqiClient", client =>
 {
@@ -59,12 +53,9 @@ builder.Services.AddHttpClient("AqiClient", client =>
 
 builder.Services.AddScoped<ICSVService, CSVService>();
 builder.Services.AddScoped<FireDetection>();
-builder.Services.AddScoped<WindServices>();
-builder.Services.AddScoped<WindVariables>();
 builder.Services.AddScoped<AqiServices>();
 builder.Services.AddScoped<FireServices>();
 builder.Services.AddScoped<ICacheService, CacheService>();
-builder.Services.AddScoped<WindComputationServices>();
 builder.Services.AddHostedService<TimedBackgroundService>();
 
 var app = builder.Build();
