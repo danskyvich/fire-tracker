@@ -1,8 +1,9 @@
 import { FireDetection } from "@/app/lib/api/types";
 import { formatDate, formatTime } from "@/app/utils/formatDateTime";
 import { formatDuration, getFireDuration } from "@/app/utils/getDuration";
-import { ChevronDown, ChevronUp, Flame, Satellite, X } from "lucide-react";
+import { ChevronDown, ChevronUp, CircleQuestionMark, Flame, Satellite, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import HoverModal from "./hover-modal";
 
 interface FireInfoProps {
   selectedFire: FireDetection | null;
@@ -13,6 +14,7 @@ interface FireInfoProps {
 export default function FireInfo({selectedFire, onClose, open}: FireInfoProps) {
     const [isMinimized, setIsMinimized] = useState<boolean>(false);
     const [duration, setDuration] = useState<string>('');
+    const [help, setHelp] = useState<boolean>(false);
 
     useEffect(() => {
       if (!selectedFire) return;
@@ -50,7 +52,7 @@ export default function FireInfo({selectedFire, onClose, open}: FireInfoProps) {
 
     if (!open) return null;
     return (
-      <div className="flex flex-col w-69 md:w-70 lg:w-80 xl:w-90 h-fit absolute z-50 pointer-events-auto rounded-lg bg-background/90 p-3 bottom-11 left-4 border border-white/25 gap-2">
+      <div className="flex flex-col w-50 md:w-70 lg:w-80 xl:w-90 h-fit absolute z-50 pointer-events-auto rounded-lg bg-background/90 p-3 bottom-11 left-4 border border-white/25 gap-2">
         {/* Controller */}
         <div
           className="flex w-full h-fit border border-white/23 items-center justify-center py-1 hover:bg-white/15 cursor-pointer transition-all duration-100 rounded-lg"
@@ -130,18 +132,32 @@ export default function FireInfo({selectedFire, onClose, open}: FireInfoProps) {
               </p>
 
               {/* Satellite */}
-              <div className="flex w-full gap-2">
-                <Satellite size={18} className="min-w-3 h-auto" />
-                <p className="text-[0.70rem] md:text-[0.8rem] lg:text-sm font-sans">
-                  {
-                    String(selectedFire?.satellite) === "N" ? "Suomi NPP" : String(selectedFire?.satellite) === "N20" ? "NOAA-20 (formerly JPSS-1)" : String(selectedFire?.satellite) === "N21" ? "NOAA-21 (formerly JPSS-2" : null
-                  }
-                  {" "}({String(selectedFire?.version)})
-                </p>
+              <div className="flex w-full gap-2 items-center justify-between">
+                <div className="flex gap-2">
+                  <Satellite size={18} className="min-w-3 h-auto" />
+                  <p className="text-[0.70rem] md:text-[0.8rem] lg:text-sm font-sans">
+                    {
+                      String(selectedFire?.satellite) === "N" ? "Suomi NPP" : String(selectedFire?.satellite) === "N20" ? "NOAA-20" : String(selectedFire?.satellite) === "N21" ? "NOAA-21" : null
+                    }
+                    {" "}<span className="text-[0.6rem] md:text-[0.7rem] lg:text-[0.775rem]">({String(selectedFire?.version)})</span>
+                  </p>
+                </div>
+                <>
+                {/* Hover over this to display more fire information */}
+                  <CircleQuestionMark className="min-w-3 h-auto cursor-pointer" size={18} onClick={() => setHelp(prev => !prev)}/>
+                </>
               </div>
             </div>
           )}
         </div>
+
+        {
+          help && (
+            <HoverModal satellite={String(selectedFire?.satellite)}>
+
+            </HoverModal>
+          )
+        }
       </div>
     );
 }
