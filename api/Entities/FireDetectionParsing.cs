@@ -14,5 +14,6 @@ namespace WildFireTracker.fires
         public double frp { get; set; }
         public required string daynight { get; set; } // D or N 
         public int Id { get; set; }
+        public required string version { get; set; }
     }
 }

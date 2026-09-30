@@ -99,9 +99,12 @@ export default function InteractiveMap({
       layers: [
         //fire
         activeLayers.has("fire-markers") &&
-          FiresMap({ fires, onChose: setSelectedFire })
+          FiresMap({ fires, onChose: setSelectedFire, onHover: (hovering) => {
+            if (isMeasuringRef.current) return;
+            mapInstance.getCanvas().style.cursor = hovering ? "pointer" : "";
+          } 
+        })
       ].filter(Boolean),
-      getCursor: ({ isHovering }) => (isHovering ? "pointer" : "default"),
     });
   }, [fires, activeLayers, mapInstance]);
 
@@ -263,10 +266,7 @@ export default function InteractiveMap({
 
           // when mouse moves
           map.on("mousemove", (e) => {
-            if (!isMeasuringRef.current) {
-              map.getCanvas().style.cursor = "";
-              return;
-            }
+            if (!isMeasuringRef.current) return;
             // update features
             const features = map.queryRenderedFeatures(e.point, {
               layers: ["measure-points"],

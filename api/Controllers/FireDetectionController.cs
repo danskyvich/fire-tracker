@@ -40,6 +40,7 @@ namespace WildFireTracker.search
                 frp = item.frp,
                 daynight = item.daynight,
                 acquired_at = item.acquired_at,
+                version = item.version,
 
             }).ToList();
 

@@ -10,4 +10,5 @@ export interface FireDetection {
     acq_date: string,
     acq_time: string,
     satellite: string,
+    version: string,
 }

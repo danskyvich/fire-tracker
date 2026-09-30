@@ -1,16 +1,15 @@
 import { FireDetection } from "@/app/lib/api/types";
 import { ScatterplotLayer } from "deck.gl";
-import { DataFilterExtension } from"@deck.gl/extensions";
-
 interface FiresMapProps {
     fires: FireDetection[];
     onChose: (fires: FireDetection) => void;
+    onHover?: (isHovering: boolean) => void;
 }
 
 // true fires (day) -> bright_ti4 > 325K & DeltaT45 > 25K
 // true fires (night) -> bright_ti4 > 294K & DeltaT45 > 10K
 
-export function FiresMap({fires, onChose}: FiresMapProps) {
+export function FiresMap({fires, onChose, onHover}: FiresMapProps) {
     return new ScatterplotLayer({
         id: "fires",
         data: fires,
@@ -23,5 +22,6 @@ export function FiresMap({fires, onChose}: FiresMapProps) {
         radiusMaxPixels: 2.5,
         getFillColor: [255,0,0],
         getLineColor: d => d.isValid ? [255,0,0,0.5] : [255,0,0,0.5],
+        onHover: (info) => onHover?.(!!info.object),
     });
 }
