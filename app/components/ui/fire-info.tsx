@@ -15,6 +15,7 @@ export default function FireInfo({selectedFire, onClose, open}: FireInfoProps) {
     const [isMinimized, setIsMinimized] = useState<boolean>(false);
     const [duration, setDuration] = useState<string>('');
     const [help, setHelp] = useState<boolean>(false);
+    const [cursor, getCursor] = useState<string>('auto');
 
     useEffect(() => {
       if (!selectedFire) return;

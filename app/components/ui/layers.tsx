@@ -12,7 +12,7 @@ export default function Layer({ onClose, open, toggleLayers, activeLayers }: Lay
   const LAYERS_ITEMS = [
     {
       id: "fire-markers",
-      label: "Fire-markers",
+      label: "Fire markers",
       toggle: activeLayers.has("fire-markers"),
       onCheck: () => toggleLayers("fire-markers"),
     },
@@ -22,6 +22,12 @@ export default function Layer({ onClose, open, toggleLayers, activeLayers }: Lay
       toggle: activeLayers.has("air-quality"),
       onCheck: () => toggleLayers("air-quality"),
     },
+    {
+      id: "protected-area",
+      label: "Protected areas",
+      toggle: activeLayers.has("protected-areas"),
+      onCheck: () => toggleLayers("protected-areas"),
+    }
   ];
 
   if (!open) return null;

@@ -9,23 +9,23 @@ export default function HoverModal({satellite}: {satellite: string | undefined})
     if (satellite === undefined) return null;
     const CONTENT = [
       {
-        title: "Suomi NPP NRT",
+        title: "Suomi NPP",
         id: "N",
         active: true,
         description:
           "A joint NOAA/NASA/DoD weather and climate observation satellite, launched on October 28, 2011.",
       },
       {
-        title: "NOAA-20 VIIRS NRT",
+        title: "NOAA-20",
         active: true,
         id: "N20",
-        description: "A polar orbiting satellite that captures visible and infrared images of Earth's land, atmosphere, ice, and oceans using the VIIRS instrument. Originally called JPSS-1, it was launched in 2017 by NASA and NOAA."
+        description: "A polar orbiting satellite that captures visible and infrared images of Earth's land, atmosphere, ice, and oceans using the VIIRS instrument. Originally called JPSS-1, it was launched in 2017 by NASA and NOAA. Both NOAA-20 and Suomi NPP orbits at the same orbit."
       },
       {
-        title: "NOAA-21 VIIRS NRT",
+        title: "NOAA-21",
         active: true,
         id: "N21",
-        description: "A polar orbiting satellite launched by NASA and NOAA in November 2022. Like NOAA, it carries the VIIRS instrument that captures high-resolution imagery of the Earth's atmosphere, land, and oceans.",
+        description: "A polar orbiting satellite launched by NASA and NOAA in November 2022. Like NOAA-20, it carries the VIIRS instrument that captures high-resolution imagery of the Earth's atmosphere, land, and oceans.",
       }
     ];
 
