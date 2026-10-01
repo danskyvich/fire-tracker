@@ -1,0 +1,13 @@
+name: "Ping Render Service"
+
+on:
+  schedule:
+    - cron: '*/14 * * * *'
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Ping service'
+        run: curl -I https://fire-tracker-yh7z.onrender.com/ping
+  
