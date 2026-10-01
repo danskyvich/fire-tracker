@@ -1,0 +1,17 @@
+name: Automate Tag To Recent Release
+
+on:
+    push:
+        branches:
+            - 'main'
+            - 'release/**'
+
+jobs:
+    move-tag:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+            uses: t
+            with:
+                fetch-depth: 0
+
