@@ -2,7 +2,7 @@ name: "Ping Render Service"
 
 on:
   schedule:
-    - cron: '*/14 * * * *'
+    - cron: '*/5 * * * *'
 
 jobs:
   ping:
