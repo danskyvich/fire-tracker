@@ -66,6 +66,8 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.MapGet("/ping", () => Results.Ok(new { status = "ok", time = DateTime.UtcNow}));
+
 //app.UseHttpsRedirection();
 
 app.UseCors();
