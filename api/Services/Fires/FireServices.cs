@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Net.Http.Headers;
@@ -23,6 +24,7 @@ namespace WildFireTracker.fires
 
         public async Task<IEnumerable<FireDetection>> GetFiresAsync(string bbox, bool downsample)
         {
+            bbox = SnapBox(bbox);
             var cacheKey = $"fire:VIIRS_ALL:{bbox}:{(downsample ? "ds" : "full")}:2";
 
             var cacheContent = await _cacheService.GetCacheData<IEnumerable<FireDetection>>(cacheKey);
@@ -78,6 +80,17 @@ namespace WildFireTracker.fires
                 ))
                 .Select(g => g.OrderByDescending(f => f.bright_ti4).First()) // strongest fire per cell
                 .ToList();
+        }
+
+        private static string SnapBox(string bbox, double cell = 5.0)
+        {
+            var p = bbox.Split(',').Select(s => double.Parse(s, CultureInfo.InvariantCulture)).ToArray();
+            // assumes FIRMS order: west,south,east,north
+            var west = Math.Floor(p[0] / cell) * cell;
+            var south = Math.Floor(p[1] / cell) * cell;
+            var east = Math.Ceiling(p[2] / cell) * cell;
+            var north = Math.Ceiling(p[3] / cell) * cell;
+            return string.Create(CultureInfo.InvariantCulture, $"{west},{south},{east},{north}");
         }
 
         private async Task SetCacheData(string key, IEnumerable<FireDetection> data, int time)
