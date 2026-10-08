@@ -22,12 +22,6 @@ export default function Layer({ onClose, open, toggleLayers, activeLayers }: Lay
       toggle: activeLayers.has("air-quality"),
       onCheck: () => toggleLayers("air-quality"),
     },
-    {
-      id: "protected-area",
-      label: "Protected areas",
-      toggle: activeLayers.has("protected-areas"),
-      onCheck: () => toggleLayers("protected-areas"),
-    }
   ];
 
   if (!open) return null;
